@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1b2a6b">
+<title>Los juegos de Valen</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body {
+    width:100%; height:100%; overflow:hidden; position:fixed;
+    overscroll-behavior:none; touch-action:none;
+    -webkit-user-select:none; user-select:none;
+    font-family: "Baloo 2", "Comic Sans MS", "Trebuchet MS", system-ui, sans-serif;
+    background:#1b2a6b;
+  }
+  #app { width:100%; height:100%; position:relative; }
+
+  /* ---------- MENU ---------- */
+  #menu {
+    width:100%; height:100%;
+    background: radial-gradient(circle at 50% 0%, #4a63d8 0%, #1b2a6b 70%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2vmin; padding:3vmin;
+  }
+  #titulo {
+    font-size:9vmin; font-weight:900; color:#fff; text-align:center;
+    text-shadow:0 0.8vmin 0 rgba(0,0,0,.25);
+    letter-spacing:.05em;
+  }
+  #grid {
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:2.5vmin;
+    width:100%; max-width:150vmin;
+  }
+  .tarjeta {
+    aspect-ratio:1/1;
+    border-radius:5vmin; border:none;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12vmin; cursor:pointer;
+    box-shadow:0 1.2vmin 0 rgba(0,0,0,.28);
+    transition:transform .12s ease;
+    animation:flotar 3s ease-in-out infinite;
+  }
+  .tarjeta:active { transform:scale(.92) translateY(.6vmin); }
+  .tarjeta:nth-child(1){ background:#ff6b6b; animation-delay:0s }
+  .tarjeta:nth-child(2){ background:#ffa43b; animation-delay:.2s }
+  .tarjeta:nth-child(3){ background:#ffd23f; animation-delay:.4s }
+  .tarjeta:nth-child(4){ background:#3ecf8e; animation-delay:.6s }
+  .tarjeta:nth-child(5){ background:#4fc3f7; animation-delay:.8s }
+  .tarjeta:nth-child(6){ background:#c77dff; animation-delay:1s }
+  @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1vmin) } }
+
+  /* ---------- PANTALLA DE JUEGO ---------- */
+  #juego { position:absolute; inset:0; display:none; }
+  #juego.activo { display:block; }
+  #lienzo { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  #capa { position:absolute; inset:0; }
+
+  #volver {
+    position:absolute; top:2vmin; left:2vmin; z-index:50;
+    width:13vmin; height:13vmin; border:none; border-radius:50%;
+    background:rgba(255,255,255,.9); color:#1b2a6b;
+    font-size:7vmin; line-height:1; cursor:pointer;
+    box-shadow:0 .8vmin 0 rgba(0,0,0,.2);
+    display:none; align-items:center; justify-content:center;
+  }
+  #volver.visible { display:flex; }
+  #volver:active { transform:scale(.9); }
+
+  /* ---------- GRANJA ---------- */
+  .tablero {
+    position:absolute; inset:0; padding:16vmin 3vmin 3vmin;
+    display:grid; gap:2.5vmin; align-content:center;
+  }
+  .bicho {
+    border:none; border-radius:5vmin; background:rgba(255,255,255,.92);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13vmin; cursor:pointer; aspect-ratio:1/1;
+    box-shadow:0 1vmin 0 rgba(0,0,0,.18);
+    transition:transform .15s ease;
+  }
+  .bicho:active { transform:scale(1.15) rotate(-6deg); }
+  .bicho.saltando { animation:saltar .6s ease; }
+  @keyframes saltar {
+    0%,100%{ transform:scale(1) }
+    30%{ transform:scale(1.3) rotate(8deg) }
+    60%{ transform:scale(1.1) rotate(-8deg) }
+  }
+
+  /* ---------- PIANO ---------- */
+  #piano { position:absolute; inset:0; display:flex; padding-top:16vmin; }
+  .tecla {
+    flex:1; border:none; cursor:pointer;
+    display:flex; align-items:flex-end; justify-content:center;
+    padding-bottom:6vmin; font-size:9vmin;
+    transition:filter .08s ease;
+  }
+  .tecla.tocando { filter:brightness(1.45); }
+
+  /* ---------- PINTAR ---------- */
+  #paleta {
+    position:absolute; bottom:0; left:0; right:0; z-index:40;
+    display:flex; gap:1.5vmin; padding:2vmin;
+    background:rgba(0,0,0,.28); backdrop-filter:blur(4px);
+  }
+  .color {
+    flex:1; height:11vmin; border-radius:3vmin; border:.7vmin solid transparent;
+    cursor:pointer;
+  }
+  .color.elegido { border-color:#fff; transform:scale(1.06); }
+  #limpiar {
+    width:14vmin; height:11vmin; border:none; border-radius:3vmin;
+    background:rgba(255,255,255,.9); font-size:6vmin; cursor:pointer;
+  }
+
+  /* ---------- MEMOTEST ---------- */
+  #memo {
+    position:absolute; inset:0; padding:16vmin 3vmin 3vmin;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:2.5vmin; align-content:center;
+  }
+  .carta {
+    aspect-ratio:1/1; border:none; border-radius:5vmin; cursor:pointer;
+    background:#ffd23f; font-size:12vmin;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 1vmin 0 rgba(0,0,0,.2);
+    transition:transform .2s ease, background .2s ease;
+  }
+  .carta::before { content:"⭐"; position:absolute; opacity:.55; font-size:9vmin; }
+  .carta.abierta::before, .carta.lista::before { display:none; }
+  .carta .cara { opacity:0; transition:opacity .15s ease; position:relative; }
+  .carta.abierta { background:#fff; transform:rotateY(0deg) scale(1.02); }
+  .carta.abierta .cara { opacity:1; }
+  .carta.lista { background:#3ecf8e; }
+  .carta.lista .cara { opacity:1; }
+
+  /* ---------- ATRAPAR ---------- */
+  #cesta { position:absolute; z-index:30; font-size:16vmin; pointer-events:none;
+           bottom:2vmin; transform:translateX(-50%); transition:none; }
+  #marcador {
+    position:absolute; top:2vmin; right:3vmin; z-index:50;
+    font-size:8vmin; color:#fff; font-weight:900;
+    text-shadow:0 .5vmin 0 rgba(0,0,0,.3); display:none;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="menu">
+    <div id="titulo">🎉 Los juegos de Valen 🎉</div>
+    <div id="grid">
+      <button class="tarjeta" data-juego="globos">🎈</button>
+      <button class="tarjeta" data-juego="granja">🐮</button>
+      <button class="tarjeta" data-juego="piano">🎹</button>
+      <button class="tarjeta" data-juego="pintar">🎨</button>
+      <button class="tarjeta" data-juego="memo">🃏</button>
+      <button class="tarjeta" data-juego="atrapar">🧺</button>
+    </div>
+  </div>
+
+  <div id="juego">
+    <canvas id="lienzo"></canvas>
+    <div id="capa"></div>
+    <div id="marcador">0</div>
+  </div>
+
+  <button id="volver">⬅️</button>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   BASE: audio, voz, canvas, ciclo de animación
+   ============================================================ */
+
+let ctxAudio = null;
+function audio() {
+  if (!ctxAudio) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctxAudio = new AC();
+  }
+  if (ctxAudio.state === "suspended") ctxAudio.resume();
+  return ctxAudio;
+}
+
+// Nota simple con envolvente suave (nada estridente para un nene chico)
+function nota(frec, dur = 0.35, tipo = "sine", vol = 0.25) {
+  const ac = audio();
+  const osc = ac.createOscillator();
+  const gan = ac.createGain();
+  osc.type = tipo;
+  osc.frequency.value = frec;
+  gan.gain.setValueAtTime(0, ac.currentTime);
+  gan.gain.linearRampToValueAtTime(vol, ac.currentTime + 0.02);
+  gan.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+  osc.connect(gan).connect(ac.destination);
+  osc.start();
+  osc.stop(ac.currentTime + dur + 0.05);
+}
+
+// "Pop" del globo
+function pop() {
+  const ac = audio();
+  const osc = ac.createOscillator();
+  const gan = ac.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(700, ac.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(120, ac.currentTime + 0.12);
+  gan.gain.setValueAtTime(0.3, ac.currentTime);
+  gan.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+  osc.connect(gan).connect(ac.destination);
+  osc.start();
+  osc.stop(ac.currentTime + 0.2);
+}
+
+function fanfarria() {
+  [523, 659, 784, 1047].forEach((f, i) =>
+    setTimeout(() => nota(f, 0.45, "triangle", 0.22), i * 130)
+  );
+}
+
+// Voz en español (dice el nombre de lo que toca)
+let vozEs = null;
+function elegirVoz() {
+  const voces = speechSynthesis.getVoices();
+  vozEs = voces.find(v => /es[-_]AR/i.test(v.lang))
+       || voces.find(v => /es[-_]MX|es[-_]US|es[-_]419/i.test(v.lang))
+       || voces.find(v => /^es/i.test(v.lang))
+       || null;
+}
+if ("speechSynthesis" in window) {
+  elegirVoz();
+  speechSynthesis.onvoiceschanged = elegirVoz;
+}
+function decir(texto) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(texto);
+  u.lang = "es-AR";
+  u.rate = 0.85;
+  u.pitch = 1.25;
+  if (vozEs) u.voice = vozEs;
+  speechSynthesis.speak(u);
+}
+
+const lienzo = document.getElementById("lienzo");
+const cv = lienzo.getContext("2d");
+const capa = document.getElementById("capa");
+const pantallaJuego = document.getElementById("juego");
+const menu = document.getElementById("menu");
+const btnVolver = document.getElementById("volver");
+const marcador = document.getElementById("marcador");
+
+let A = 0, H = 0, dpr = 1;
+function medir() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  A = lienzo.clientWidth;
+  H = lienzo.clientHeight;
+  lienzo.width = A * dpr;
+  lienzo.height = H * dpr;
+  cv.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener("resize", () => { medir(); if (juegoActual && juegoActual.medir) juegoActual.medir(); });
+
+let juegoActual = null;
+let cuadro = 0;
+
+function ciclo() {
+  cuadro = requestAnimationFrame(ciclo);
+  // si cambió el tamaño (rotó la tablet, se mostró recién la pantalla) reajusta
+  if (lienzo.clientWidth !== A || lienzo.clientHeight !== H) {
+    medir();
+    if (juegoActual && juegoActual.medir) juegoActual.medir();
+  }
+  if (juegoActual && juegoActual.dibujar) juegoActual.dibujar();
+}
+
+function abrir(nombre) {
+  cerrar();
+  menu.style.display = "none";
+  pantallaJuego.classList.add("activo");
+  btnVolver.classList.add("visible");
+  medir(); // recién ahora el canvas tiene tamaño real
+  juegoActual = JUEGOS[nombre]();
+  if (juegoActual.dibujar) ciclo();
+  audio();
+}
+
+function cerrar() {
+  cancelAnimationFrame(cuadro);
+  if (juegoActual && juegoActual.salir) juegoActual.salir();
+  juegoActual = null;
+  capa.innerHTML = "";
+  capa.style.background = "";
+  marcador.style.display = "none";
+  cv.clearRect(0, 0, A, H);
+  pantallaJuego.classList.remove("activo");
+  btnVolver.classList.remove("visible");
+  menu.style.display = "flex";
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+
+btnVolver.addEventListener("click", cerrar);
+document.querySelectorAll(".tarjeta").forEach(b => {
+  b.addEventListener("click", () => { nota(660, 0.2, "sine", 0.2); abrir(b.dataset.juego); });
+});
+
+// Coordenadas de un toque/click relativas al canvas
+function punto(ev) {
+  const r = lienzo.getBoundingClientRect();
+  const t = ev.touches ? ev.touches[0] : ev;
+  return { x: t.clientX - r.left, y: t.clientY - r.top };
+}
+
+/* ============================================================
+   PARTÍCULAS (confeti / explosión), compartidas
+   ============================================================ */
+let particulas = [];
+function estallar(x, y, color, cantidad = 22) {
+  for (let i = 0; i < cantidad; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const vel = 2 + Math.random() * 6;
+    particulas.push({
+      x, y,
+      vx: Math.cos(ang) * vel,
+      vy: Math.sin(ang) * vel - 2,
+      r: 3 + Math.random() * 7,
+      vida: 1,
+      color
+    });
+  }
+}
+function pintarParticulas() {
+  for (let i = particulas.length - 1; i >= 0; i--) {
+    const p = particulas[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.25; p.vida -= 0.02;
+    if (p.vida <= 0) { particulas.splice(i, 1); continue; }
+    cv.globalAlpha = Math.max(p.vida, 0);
+    cv.fillStyle = p.color;
+    cv.beginPath();
+    cv.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    cv.fill();
+  }
+  cv.globalAlpha = 1;
+}
+
+const COLORES = ["#ff6b6b", "#ffa43b", "#ffd23f", "#3ecf8e", "#4fc3f7", "#c77dff", "#ff8fab"];
+const alAzar = arr => arr[Math.floor(Math.random() * arr.length)];
+
+/* ============================================================
+   JUEGOS
+   ============================================================ */
+const JUEGOS = {};
+
+/* --- 1. GLOBOS: suben globos, los toca y explotan --- */
+JUEGOS.globos = function () {
+  const globos = [];
+  let proximo = 0;
+
+  function nuevoGlobo() {
+    const r = Math.max(A, H) * 0.075;
+    globos.push({
+      x: r + Math.random() * (A - r * 2),
+      y: H + r,
+      r,
+      vel: 0.9 + Math.random() * 1.1,
+      bamboleo: Math.random() * Math.PI * 2,
+      color: alAzar(COLORES)
+    });
+  }
+
+  function tocar(ev) {
+    ev.preventDefault();
+    const p = punto(ev);
+    for (let i = globos.length - 1; i >= 0; i--) {
+      const g = globos[i];
+      if (Math.hypot(g.x - p.x, g.y - p.y) < g.r * 1.25) {
+        estallar(g.x, g.y, g.color, 26);
+        globos.splice(i, 1);
+        pop();
+        return;
+      }
+    }
+  }
+  lienzo.addEventListener("touchstart", tocar, { passive: false });
+  lienzo.addEventListener("mousedown", tocar);
+
+  return {
+    dibujar() {
+      cv.fillStyle = "#8fd3ff";
+      cv.fillRect(0, 0, A, H);
+      // pasto
+      cv.fillStyle = "#5fc46b";
+      cv.fillRect(0, H - H * 0.1, A, H * 0.1);
+      // sol
+      cv.fillStyle = "#ffe066";
+      cv.beginPath(); cv.arc(A * 0.88, H * 0.12, Math.min(A, H) * 0.09, 0, Math.PI * 2); cv.fill();
+
+      if (--proximo <= 0) { nuevoGlobo(); proximo = 45 + Math.random() * 45; }
+
+      for (let i = globos.length - 1; i >= 0; i--) {
+        const g = globos[i];
+        g.y -= g.vel;
+        g.bamboleo += 0.03;
+        const x = g.x + Math.sin(g.bamboleo) * 12;
+        if (g.y + g.r < -20) { globos.splice(i, 1); continue; }
+        // hilo
+        cv.strokeStyle = "rgba(255,255,255,.7)";
+        cv.lineWidth = 2;
+        cv.beginPath();
+        cv.moveTo(x, g.y + g.r);
+        cv.quadraticCurveTo(x + 10, g.y + g.r * 1.6, x, g.y + g.r * 2.1);
+        cv.stroke();
+        // cuerpo
+        cv.fillStyle = g.color;
+        cv.beginPath();
+        cv.ellipse(x, g.y, g.r * 0.85, g.r, 0, 0, Math.PI * 2);
+        cv.fill();
+        // brillo
+        cv.fillStyle = "rgba(255,255,255,.45)";
+        cv.beginPath();
+        cv.ellipse(x - g.r * 0.3, g.y - g.r * 0.35, g.r * 0.18, g.r * 0.26, -0.4, 0, Math.PI * 2);
+        cv.fill();
+      }
+      pintarParticulas();
+    },
+    salir() {
+      lienzo.removeEventListener("touchstart", tocar);
+      lienzo.removeEventListener("mousedown", tocar);
+      particulas = [];
+    }
+  };
+};
+
+/* --- 2. GRANJA: toca un animal, lo nombra y hace su sonido --- */
+JUEGOS.granja = function () {
+  const bichos = [
+    { e: "🐮", n: "la vaca",     s: "muuu"      },
+    { e: "🐶", n: "el perro",    s: "guau guau" },
+    { e: "🐱", n: "el gato",     s: "miau"      },
+    { e: "🐷", n: "el chancho",  s: "oink oink" },
+    { e: "🐔", n: "la gallina",  s: "co co co"  },
+    { e: "🐴", n: "el caballo",  s: "iiih"      },
+    { e: "🐸", n: "la rana",     s: "croac"     },
+    { e: "🦁", n: "el león",     s: "grrrr"     },
+    { e: "🐑", n: "la oveja",    s: "beee"      }
+  ];
+
+  capa.style.background = "linear-gradient(#a8e063, #56ab2f)";
+  const tablero = document.createElement("div");
+  tablero.className = "tablero";
+  tablero.style.gridTemplateColumns = "repeat(3, 1fr)";
+
+  bichos.forEach(b => {
+    const btn = document.createElement("button");
+    btn.className = "bicho";
+    btn.textContent = b.e;
+    btn.addEventListener("click", () => {
+      btn.classList.remove("saltando");
+      void btn.offsetWidth;
+      btn.classList.add("saltando");
+      nota(520, 0.15, "sine", 0.15);
+      decir(b.n + ". " + b.s);
+      const r = btn.getBoundingClientRect();
+      estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 14);
+    });
+    tablero.appendChild(btn);
+  });
+  capa.appendChild(tablero);
+
+  return {
+    dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
+    salir() { capa.style.background = ""; particulas = []; }
+  };
+};
+
+/* --- 3. PIANO: teclas de colores con notas --- */
+JUEGOS.piano = function () {
+  const teclas = [
+    { f: 262, c: "#ff6b6b", e: "🍓" },
+    { f: 294, c: "#ffa43b", e: "🍊" },
+    { f: 330, c: "#ffd23f", e: "🍋" },
+    { f: 349, c: "#3ecf8e", e: "🍏" },
+    { f: 392, c: "#4fc3f7", e: "🫐" },
+    { f: 440, c: "#7c8bff", e: "🍇" },
+    { f: 494, c: "#c77dff", e: "🍬" }
+  ];
+
+  capa.style.background = "#241a3a";
+  const piano = document.createElement("div");
+  piano.id = "piano";
+
+  teclas.forEach(t => {
+    const k = document.createElement("button");
+    k.className = "tecla";
+    k.style.background = t.c;
+    k.textContent = t.e;
+    const sonar = ev => {
+      ev.preventDefault();
+      nota(t.f, 0.6, "triangle", 0.22);
+      k.classList.add("tocando");
+      const r = k.getBoundingClientRect();
+      estallar(r.left + r.width / 2, r.top + r.height * 0.3, t.c, 12);
+      setTimeout(() => k.classList.remove("tocando"), 150);
+    };
+    k.addEventListener("touchstart", sonar, { passive: false });
+    k.addEventListener("mousedown", sonar);
+    piano.appendChild(k);
+  });
+  capa.appendChild(piano);
+
+  return {
+    dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
+    salir() { capa.style.background = ""; particulas = []; }
+  };
+};
+
+/* --- 4. PINTAR: dibuja con el dedo --- */
+JUEGOS.pintar = function () {
+  cv.fillStyle = "#fffdf5";
+  cv.fillRect(0, 0, A, H);
+
+  let color = "#ff6b6b";
+  let pintando = false;
+  let ult = null;
+
+  const paleta = document.createElement("div");
+  paleta.id = "paleta";
+  COLORES.concat(["#333333"]).forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "color" + (i === 0 ? " elegido" : "");
+    b.style.background = c;
+    b.addEventListener("click", () => {
+      color = c;
+      paleta.querySelectorAll(".color").forEach(x => x.classList.remove("elegido"));
+      b.classList.add("elegido");
+      nota(700, 0.12, "sine", 0.15);
+    });
+    paleta.appendChild(b);
+  });
+  const limpiar = document.createElement("button");
+  limpiar.id = "limpiar";
+  limpiar.textContent = "🧽";
+  limpiar.addEventListener("click", () => {
+    cv.fillStyle = "#fffdf5";
+    cv.fillRect(0, 0, A, H);
+    nota(300, 0.3, "sine", 0.18);
+  });
+  paleta.appendChild(limpiar);
+  capa.appendChild(paleta);
+
+  const grosor = Math.max(A, H) * 0.022;
+
+  function empezar(ev) { ev.preventDefault(); pintando = true; ult = punto(ev); trazar(ev); }
+  function trazar(ev) {
+    if (!pintando) return;
+    ev.preventDefault();
+    const p = punto(ev);
+    cv.strokeStyle = color;
+    cv.lineWidth = grosor;
+    cv.lineCap = "round";
+    cv.lineJoin = "round";
+    cv.beginPath();
+    cv.moveTo(ult.x, ult.y);
+    cv.lineTo(p.x, p.y);
+    cv.stroke();
+    ult = p;
+  }
+  function terminar() { pintando = false; }
+
+  lienzo.addEventListener("touchstart", empezar, { passive: false });
+  lienzo.addEventListener("touchmove", trazar, { passive: false });
+  lienzo.addEventListener("touchend", terminar);
+  lienzo.addEventListener("mousedown", empezar);
+  lienzo.addEventListener("mousemove", trazar);
+  window.addEventListener("mouseup", terminar);
+
+  return {
+    // sin dibujar(): el trazo queda fijo en el canvas
+    medir() { cv.fillStyle = "#fffdf5"; cv.fillRect(0, 0, A, H); },
+    salir() {
+      lienzo.removeEventListener("touchstart", empezar);
+      lienzo.removeEventListener("touchmove", trazar);
+      lienzo.removeEventListener("touchend", terminar);
+      lienzo.removeEventListener("mousedown", empezar);
+      lienzo.removeEventListener("mousemove", trazar);
+      window.removeEventListener("mouseup", terminar);
+    }
+  };
+};
+
+/* --- 5. MEMOTEST: 3 pares, sin tiempo, sin perder --- */
+JUEGOS.memo = function () {
+  const figuras = ["🍎", "🚗", "⭐", "🐟", "🌻", "🎩", "🦋", "🍌"];
+  const elegidas = figuras.sort(() => Math.random() - 0.5).slice(0, 3);
+  const mazo = elegidas.concat(elegidas).sort(() => Math.random() - 0.5);
+
+  capa.style.background = "linear-gradient(#5f72be, #9b23ea)";
+  const grilla = document.createElement("div");
+  grilla.id = "memo";
+
+  let abiertas = [];
+  let bloqueado = false;
+  let resueltas = 0;
+
+  mazo.forEach(fig => {
+    const c = document.createElement("button");
+    c.className = "carta";
+    c.innerHTML = '<span class="cara">' + fig + "</span>";
+    c.dataset.fig = fig;
+    c.addEventListener("click", () => {
+      if (bloqueado || c.classList.contains("abierta") || c.classList.contains("lista")) return;
+      c.classList.add("abierta");
+      nota(600, 0.2, "sine", 0.18);
+      abiertas.push(c);
+      if (abiertas.length < 2) return;
+
+      bloqueado = true;
+      const [a, b] = abiertas;
+      if (a.dataset.fig === b.dataset.fig) {
+        setTimeout(() => {
+          [a, b].forEach(x => {
+            x.classList.remove("abierta");
+            x.classList.add("lista");
+            const r = x.getBoundingClientRect();
+            estallar(r.left + r.width / 2, r.top + r.height / 2, "#ffd23f", 18);
+          });
+          nota(880, 0.3, "triangle", 0.22);
+          abiertas = []; bloqueado = false;
+          if (++resueltas === 3) {
+            setTimeout(() => {
+              fanfarria();
+              decir("¡Muy bien Valen!");
+              for (let i = 0; i < 14; i++) {
+                setTimeout(() => estallar(Math.random() * A, H * 0.3, alAzar(COLORES), 16), i * 70);
+              }
+              setTimeout(reiniciar, 2600);
+            }, 350);
+          }
+        }, 450);
+      } else {
+        setTimeout(() => {
+          a.classList.remove("abierta");
+          b.classList.remove("abierta");
+          abiertas = []; bloqueado = false;
+        }, 800);
+      }
+    });
+    grilla.appendChild(c);
+  });
+  capa.appendChild(grilla);
+
+  function reiniciar() { capa.innerHTML = ""; capa.style.background = ""; juegoActual = JUEGOS.memo(); }
+
+  return {
+    dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
+    salir() { capa.style.background = ""; particulas = []; }
+  };
+};
+
+/* --- 6. ATRAPAR: mueve la cesta con el dedo y junta frutas --- */
+JUEGOS.atrapar = function () {
+  const cosas = [];
+  const frutas = ["🍎", "🍌", "🍓", "🍇", "🍊", "🍐", "🍉", "⭐"];
+  let cestaX = A / 2;
+  let proximo = 0;
+  let puntos = 0;
+
+  capa.style.background = "linear-gradient(#ffd6e0, #c2f0ff)";
+  marcador.style.display = "block";
+  marcador.textContent = "0";
+
+  const cesta = document.createElement("div");
+  cesta.id = "cesta";
+  cesta.textContent = "🧺";
+  cesta.style.left = cestaX + "px";
+  capa.appendChild(cesta);
+
+  function mover(ev) {
+    ev.preventDefault();
+    const p = punto(ev);
+    cestaX = Math.max(A * 0.08, Math.min(A * 0.92, p.x));
+    cesta.style.left = cestaX + "px";
+  }
+  capa.addEventListener("touchstart", mover, { passive: false });
+  capa.addEventListener("touchmove", mover, { passive: false });
+  capa.addEventListener("mousemove", mover);
+  capa.addEventListener("mousedown", mover);
+
+  return {
+    dibujar() {
+      cv.clearRect(0, 0, A, H);
+      const tam = Math.min(A, H) * 0.11; // se recalcula por si rotó la pantalla
+
+      if (--proximo <= 0) {
+        cosas.push({
+          x: tam + Math.random() * (A - tam * 2),
+          y: -tam,
+          v: 2.2 + Math.random() * 1.6,
+          giro: (Math.random() - 0.5) * 0.06,
+          ang: 0,
+          e: alAzar(frutas)
+        });
+        proximo = 55 + Math.random() * 45;
+      }
+
+      const pisoY = H - Math.min(A, H) * 0.16;
+
+      cv.font = tam + "px serif";
+      cv.textAlign = "center";
+      cv.textBaseline = "middle";
+
+      for (let i = cosas.length - 1; i >= 0; i--) {
+        const c = cosas[i];
+        c.y += c.v;
+        c.ang += c.giro;
+
+        // ¿la atrapó?
+        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.11) {
+          estallar(c.x, c.y, alAzar(COLORES), 18);
+          cosas.splice(i, 1);
+          puntos++;
+          marcador.textContent = puntos;
+          nota(500 + Math.min(puntos, 12) * 40, 0.25, "triangle", 0.2);
+          if (puntos % 10 === 0) { fanfarria(); decir("¡Muy bien!"); }
+          continue;
+        }
+        // se cayó: rebota y desaparece, sin penalización
+        if (c.y > H + tam) { cosas.splice(i, 1); continue; }
+
+        cv.save();
+        cv.translate(c.x, c.y);
+        cv.rotate(c.ang);
+        cv.fillText(c.e, 0, 0);
+        cv.restore();
+      }
+      pintarParticulas();
+    },
+    medir() { cestaX = A / 2; cesta.style.left = cestaX + "px"; },
+    salir() {
+      capa.removeEventListener("touchstart", mover);
+      capa.removeEventListener("touchmove", mover);
+      capa.removeEventListener("mousemove", mover);
+      capa.removeEventListener("mousedown", mover);
+      capa.style.background = "";
+      particulas = [];
+    }
+  };
+};
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+medir();
+// Evita el zoom por doble toque y el scroll de rebote
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("dblclick", e => e.preventDefault());
+document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+</script>
+</body>
+</html>
