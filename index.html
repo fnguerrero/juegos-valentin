@@ -6,6 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1b2a6b">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Valen">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icono-192.png">
 <title>Los juegos de Valen</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -919,6 +924,11 @@ JUEGOS.atrapar = function () {
    ARRANQUE
    ============================================================ */
 medir();
+
+// Con esto el celular la ofrece como app y sigue andando sin internet
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
 
 // Link directo a un juego: .../#granja abre la granja sin pasar por el menú
 if (JUEGOS[location.hash.slice(1)]) abrir(location.hash.slice(1));
