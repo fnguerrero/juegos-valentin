@@ -664,8 +664,8 @@ JUEGOS.granja = function () {
       btn.classList.add("saltando");
       const dura = grabacion(b.a);              // el sonido sale al toque
       if (!dura) bicho(b.s, b.t);               // (si no cargó, el sintetizado)
-      // la voz espera a que el animal termine, con un respiro en el medio
-      setTimeout(() => decir(b.n), (dura || 900) + 700);
+      // la voz entra apenas termina el animal, casi pegada
+      setTimeout(() => decir(b.n), (dura || 900) + 300);
 
       const r = btn.getBoundingClientRect();
       estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 14);
