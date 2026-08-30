@@ -1158,13 +1158,14 @@ JUEGOS.numeros = function () {
           if (k === cuantos) {
             relojes.push(setTimeout(() => {
               fanfarria();
-              decir("¡" + palabra + " globos!");      // y cierra diciendo cuántos son
+              // uno lleva singular: "un globo", no "uno globos"
+              decir(cuantos === 1 ? "¡un globo!" : "¡" + palabra + " globos!");
               const r = zona.getBoundingClientRect();
               for (let j = 0; j < 3; j++) {           // un chispazo corto, sin taparlos
                 estallar(r.left + r.width * (0.25 + j * 0.25), r.top + r.height * 0.5,
                          alAzar(COLORES), 8);
               }
-            }, 700));
+            }, 1200));   // un respiro más largo antes del cierre
           }
         }, 800 + (k - 1) * 850));
       }
