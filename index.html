@@ -863,12 +863,12 @@ JUEGOS.atrapar = function () {
         cosas.push({
           x: tam + Math.random() * (A - tam * 2),
           y: -tam,
-          v: 2.2 + Math.random() * 1.6,
+          v: 1.1 + Math.random() * 0.5,   // bien lentas: hay tiempo de sobra para llegar
           giro: (Math.random() - 0.5) * 0.06,
           ang: 0,
           e: alAzar(frutas)
         });
-        proximo = 55 + Math.random() * 45;
+        proximo = 170 + Math.random() * 110;  // y de a una por vez, sin amontonarse
       }
 
       const pisoY = H - Math.min(A, H) * 0.16;
