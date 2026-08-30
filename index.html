@@ -137,7 +137,7 @@
     transition:transform .15s ease;
   }
   .persona .cara2 { font-size:min(12vw, 11vh); line-height:1; }
-  .persona .quien { font-size:min(3.6vw, 2.4vh); font-weight:900; color:#8a3b57; }
+  .persona .quien { font-size:min(3.6vw, 2.4vh); font-weight:900; color:#5a3242; }
   .persona:active { transform:scale(1.12); }
   .persona.saltando { animation:saltar .6s ease; }
 
@@ -1081,10 +1081,10 @@ JUEGOS.atrapar = function () {
 /* --- 7. FAMILIA: toca a cada uno y la voz dice quién es --- */
 JUEGOS.familia = function () {
   const gente = [
-    { e: "👨", n: "papá"   }, { e: "👩", n: "mamá"  },
-    { e: "👴", n: "abuelo" }, { e: "👵", n: "abuela" },
-    { e: "👨🏽", n: "tío" }, { e: "👩🏽", n: "tía" },
-    { e: "👦", n: "primo"  }, { e: "👧", n: "prima" }
+    { e: "👨", n: "papá",   c: "#8fc7ff" }, { e: "👩", n: "mamá",   c: "#ffb3d1" },
+    { e: "👴", n: "abuelo", c: "#a8e6a3" }, { e: "👵", n: "abuela", c: "#d9b3ff" },
+    { e: "🧑", n: "tío",    c: "#ffd08a" }, { e: "👩", n: "tía", c: "#ffe98a" },
+    { e: "👦", n: "primo",  c: "#9fe6e0" }, { e: "👧", n: "prima",  c: "#ffb3a8" }
   ];
 
   pantallaJuego.style.background = "linear-gradient(#ffd3a5, #fd6585)";
@@ -1094,6 +1094,7 @@ JUEGOS.familia = function () {
   gente.forEach(g => {
     const btn = document.createElement("button");
     btn.className = "persona";
+    btn.style.background = g.c;
     btn.innerHTML = '<span class="cara2">' + g.e + '</span><span class="quien">' + g.n + "</span>";
     btn.addEventListener("click", () => {
       btn.classList.remove("saltando");
