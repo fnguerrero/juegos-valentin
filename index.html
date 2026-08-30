@@ -25,37 +25,61 @@
 
   /* ---------- MENU ---------- */
   #menu {
-    width:100%; height:100%;
-    background: radial-gradient(circle at 50% 0%, #4a63d8 0%, #1b2a6b 70%);
+    width:100%; height:100%; position:relative;
+    background: radial-gradient(circle at 50% 8%, #5a72e0 0%, #2c3f9e 45%, #16225c 100%);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2vmin; padding:3vmin;
+    gap:3.5vmin; padding:3vmin;
   }
+  /* globos flotando por detrás, bien tenues */
+  #fondoMenu { position:absolute; inset:0; width:100%; height:100%; z-index:0; }
+  #titulo, #grid { position:relative; z-index:1; }
+
   #titulo {
-    font-size:9vmin; font-weight:900; color:#fff; text-align:center;
-    text-shadow:0 0.8vmin 0 rgba(0,0,0,.25);
-    letter-spacing:.05em;
+    font-size:min(8.2vw, 8.5vh); font-weight:900; white-space:nowrap;
+    letter-spacing:.02em; line-height:1.1;
+    text-shadow:0 .35vmin 0 rgba(0,0,0,.35), 0 1vmin 2vmin rgba(0,0,0,.3);
   }
+  #titulo span { display:inline-block; animation:saludar 2.6s ease-in-out infinite; }
+  @keyframes saludar { 0%,100%{ transform:translateY(0) rotate(0) } 50%{ transform:translateY(-.7vmin) rotate(-2deg) } }
+
   #grid {
-    display:grid; grid-template-columns:repeat(3, min(29vw, 24vh)); gap:2.5vmin;
+    display:grid; grid-template-columns:repeat(3, min(30vw, 27vh)); gap:2.2vmin;
     justify-content:center;
   }
   .tarjeta {
     aspect-ratio:1/1;
-    border-radius:5vmin; border:none;
-    display:flex; align-items:center; justify-content:center;
-    font-size:12vmin; cursor:pointer;
-    box-shadow:0 1.2vmin 0 rgba(0,0,0,.28);
+    border-radius:5.5vmin; border:none; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:1.4vmin; padding:2vmin; cursor:pointer;
+    box-shadow:0 1.4vmin 0 rgba(0,0,0,.32), inset 0 .8vmin 1.6vmin rgba(255,255,255,.45);
     transition:transform .12s ease;
     animation:flotar 3s ease-in-out infinite;
   }
+  /* brillo suave en la mitad de arriba */
+  .tarjeta::after {
+    content:""; position:absolute; left:0; right:0; top:0; height:48%;
+    background:linear-gradient(rgba(255,255,255,.32), rgba(255,255,255,0));
+    pointer-events:none;
+  }
+  .tarjeta .dibujo { font-size:min(11vw, 11vh); line-height:1;
+                     filter:drop-shadow(0 .5vmin .8vmin rgba(0,0,0,.28)); }
+  .tarjeta .nombre { font-size:min(3.2vw, 3vh); font-weight:900; color:#fff;
+                     letter-spacing:.03em; text-shadow:0 .3vmin .5vmin rgba(0,0,0,.35); }
+
+  /* De pie: dos columnas y botones bien grandes, que es como lo va a usar */
+  @media (orientation: portrait) {
+    #grid { grid-template-columns:repeat(2, min(42vw, 26vh)); gap:3vmin; }
+    .tarjeta .dibujo { font-size:min(16vw, 13vh); }
+    .tarjeta .nombre { font-size:min(4.4vw, 3.4vh); }
+  }
   .tarjeta:active { transform:scale(.92) translateY(.6vmin); }
-  .tarjeta:nth-child(1){ background:#ff6b6b; animation-delay:0s }
-  .tarjeta:nth-child(2){ background:#ffa43b; animation-delay:.2s }
-  .tarjeta:nth-child(3){ background:#ffd23f; animation-delay:.4s }
-  .tarjeta:nth-child(4){ background:#3ecf8e; animation-delay:.6s }
-  .tarjeta:nth-child(5){ background:#4fc3f7; animation-delay:.8s }
-  .tarjeta:nth-child(6){ background:#c77dff; animation-delay:1s }
-  @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1vmin) } }
+  .tarjeta:nth-child(1){ background:linear-gradient(160deg,#ff8f8f,#e84747); animation-delay:0s;   animation-duration:3.0s }
+  .tarjeta:nth-child(2){ background:linear-gradient(160deg,#ffc06a,#ef8b16); animation-delay:.25s; animation-duration:3.4s }
+  .tarjeta:nth-child(3){ background:linear-gradient(160deg,#ffe173,#efb716); animation-delay:.5s;  animation-duration:2.8s }
+  .tarjeta:nth-child(4){ background:linear-gradient(160deg,#6ee6ae,#1da96c); animation-delay:.75s; animation-duration:3.6s }
+  .tarjeta:nth-child(5){ background:linear-gradient(160deg,#82d9fb,#1c9fd8); animation-delay:1s;   animation-duration:3.1s }
+  .tarjeta:nth-child(6){ background:linear-gradient(160deg,#dfa6ff,#a44ce6); animation-delay:1.25s;animation-duration:3.3s }
+  @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1.2vmin) } }
 
   /* ---------- PANTALLA DE JUEGO ---------- */
   #juego { position:absolute; inset:0; display:none; }
@@ -168,14 +192,15 @@
 <div id="app">
 
   <div id="menu">
-    <div id="titulo">🎉 Los juegos de Valen 🎉</div>
+    <canvas id="fondoMenu"></canvas>
+    <div id="titulo"></div>
     <div id="grid">
-      <button class="tarjeta" data-juego="globos">🎈</button>
-      <button class="tarjeta" data-juego="granja">🐮</button>
-      <button class="tarjeta" data-juego="piano">🎹</button>
-      <button class="tarjeta" data-juego="pintar">🎨</button>
-      <button class="tarjeta" data-juego="memo">🃏</button>
-      <button class="tarjeta" data-juego="atrapar">🧺</button>
+      <button class="tarjeta" data-juego="globos"><span class="dibujo">🎈</span><span class="nombre">Globos</span></button>
+      <button class="tarjeta" data-juego="granja"><span class="dibujo">🐮</span><span class="nombre">Animales</span></button>
+      <button class="tarjeta" data-juego="piano"><span class="dibujo">🎹</span><span class="nombre">Piano</span></button>
+      <button class="tarjeta" data-juego="pintar"><span class="dibujo">🎨</span><span class="nombre">Pintar</span></button>
+      <button class="tarjeta" data-juego="memo"><span class="dibujo">🃏</span><span class="nombre">Memoria</span></button>
+      <button class="tarjeta" data-juego="atrapar"><span class="dibujo">🧺</span><span class="nombre">Atrapar</span></button>
     </div>
   </div>
 
@@ -254,15 +279,15 @@ function precargar(nombres) {
     pistas[n] = a;
   });
 }
-// Devuelve true si pudo reproducir la grabación
+// Reproduce la grabación y devuelve cuánto dura, en milisegundos (0 si no pudo)
 function grabacion(nombre) {
   const base = pistas[nombre];
-  if (!base) return false;
+  if (!base) return 0;
   const s = base.cloneNode();      // clon: se pueden tocar dos animales seguidos
   s.volume = 0.9;
   const p = s.play();
   if (p && p.catch) p.catch(() => {});
-  return true;
+  return Math.round((base.duration || 1) * 1000);
 }
 
 // Sonido de animal sintetizado: secuencia de tonos que se deslizan.
@@ -443,6 +468,7 @@ function ciclo() {
 function abrir(nombre) {
   cerrar();
   menu.style.display = "none";
+  if (window.fondoMenuAndando) window.fondoMenuAndando.apagar();
   pantallaJuego.classList.add("activo");
   btnVolver.classList.add("visible");
   medir(); // recién ahora el canvas tiene tamaño real
@@ -468,6 +494,7 @@ function cerrar(alMenu) {
   pantallaJuego.classList.remove("activo");
   btnVolver.classList.remove("visible");
   menu.style.display = "flex";
+  if (window.fondoMenuAndando) window.fondoMenuAndando.prender();
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
@@ -635,8 +662,10 @@ JUEGOS.granja = function () {
       btn.classList.remove("saltando");
       void btn.offsetWidth;
       btn.classList.add("saltando");
-      grabacion(b.a) || bicho(b.s, b.t);        // el sonido sale al toque
-      setTimeout(() => decir(b.n), 900);        // y después la voz dice cuál es
+      const dura = grabacion(b.a);              // el sonido sale al toque
+      if (!dura) bicho(b.s, b.t);               // (si no cargó, el sintetizado)
+      // la voz espera a que el animal termine, con un respiro en el medio
+      setTimeout(() => decir(b.n), (dura || 900) + 700);
 
       const r = btn.getBoundingClientRect();
       estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 14);
@@ -928,6 +957,69 @@ JUEGOS.atrapar = function () {
 /* ============================================================
    ARRANQUE
    ============================================================ */
+/* ---------- PORTADA ----------
+   Título con cada letra de un color y globos flotando por detrás. */
+(function portada() {
+  const texto = "Los juegos de Valen";
+  const t = document.getElementById("titulo");
+  [...texto].forEach((letra, i) => {
+    const sp = document.createElement("span");
+    sp.textContent = letra === " " ? " " : letra;
+    sp.style.color = COLORES[i % COLORES.length];
+    sp.style.animationDelay = (i * 0.07) + "s";
+    t.appendChild(sp);
+  });
+
+  const fondo = document.getElementById("fondoMenu");
+  const fc = fondo.getContext("2d");
+  let globos = [], anim = 0, fa = 0, fh = 0;
+
+  function medirFondo() {
+    fa = fondo.clientWidth; fh = fondo.clientHeight;
+    fondo.width = fa * dpr; fondo.height = fh * dpr;
+    fc.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function pintar() {
+    anim = requestAnimationFrame(pintar);
+    if (fondo.clientWidth !== fa || fondo.clientHeight !== fh) medirFondo();
+    fc.clearRect(0, 0, fa, fh);
+    if (globos.length < 7 && Math.random() < 0.02) {
+      const r = Math.min(fa, fh) * (0.05 + Math.random() * 0.045);
+      globos.push({ x: r + Math.random() * (fa - r * 2), y: fh + r, r,
+                    vel: 0.25 + Math.random() * 0.35, vaiven: Math.random() * 6.3,
+                    color: alAzar(COLORES) });
+    }
+    for (let i = globos.length - 1; i >= 0; i--) {
+      const g = globos[i];
+      g.y -= g.vel; g.vaiven += 0.012;
+      if (g.y + g.r < -10) { globos.splice(i, 1); continue; }
+      const x = g.x + Math.sin(g.vaiven) * 14;
+      fc.globalAlpha = 0.28;
+      fc.fillStyle = g.color;
+      fc.beginPath();
+      fc.ellipse(x, g.y, g.r * 0.85, g.r, 0, 0, Math.PI * 2);
+      fc.fill();
+      fc.globalAlpha = 0.22;                       // el brillito que lo hace globo
+      fc.fillStyle = "#fff";
+      fc.beginPath();
+      fc.ellipse(x - g.r * 0.3, g.y - g.r * 0.35, g.r * 0.16, g.r * 0.24, -0.4, 0, Math.PI * 2);
+      fc.fill();
+      fc.globalAlpha = 0.1;
+      fc.strokeStyle = "#fff"; fc.lineWidth = 2;
+      fc.beginPath(); fc.moveTo(x, g.y + g.r); fc.lineTo(x, g.y + g.r * 1.9); fc.stroke();
+    }
+    fc.globalAlpha = 1;
+  }
+
+  window.fondoMenuAndando = {
+    prender() { if (!anim) { medirFondo(); pintar(); } },
+    apagar() { cancelAnimationFrame(anim); anim = 0; fc.clearRect(0, 0, fa, fh); }
+  };
+  medirFondo();
+  pintar();
+})();
+
 medir();
 
 // El navegador no deja sonar nada hasta que el dedo toca la pantalla:
