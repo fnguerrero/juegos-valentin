@@ -353,7 +353,7 @@ function cerrar() {
   if (juegoActual && juegoActual.salir) juegoActual.salir();
   juegoActual = null;
   capa.innerHTML = "";
-  capa.style.background = "";
+  pantallaJuego.style.background = "";
   marcador.style.display = "none";
   cv.clearRect(0, 0, A, H);
   pantallaJuego.classList.remove("activo");
@@ -511,7 +511,7 @@ JUEGOS.granja = function () {
 
   precargar(bichos.map(b => b.a));
 
-  capa.style.background = "linear-gradient(#a8e063, #56ab2f)";
+  pantallaJuego.style.background = "linear-gradient(#a8e063, #56ab2f)";
   const tablero = document.createElement("div");
   tablero.className = "tablero";
 
@@ -535,7 +535,7 @@ JUEGOS.granja = function () {
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
-    salir() { capa.style.background = ""; particulas = []; }
+    salir() { pantallaJuego.style.background = ""; particulas = []; }
   };
 };
 
@@ -551,7 +551,7 @@ JUEGOS.piano = function () {
     { f: 494, c: "#c77dff", e: "🍬" }
   ];
 
-  capa.style.background = "#241a3a";
+  pantallaJuego.style.background = "#241a3a";
   const piano = document.createElement("div");
   piano.id = "piano";
 
@@ -576,7 +576,7 @@ JUEGOS.piano = function () {
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
-    salir() { capa.style.background = ""; particulas = []; }
+    salir() { pantallaJuego.style.background = ""; particulas = []; }
   };
 };
 
@@ -660,7 +660,7 @@ JUEGOS.memo = function () {
   const elegidas = figuras.sort(() => Math.random() - 0.5).slice(0, 3);
   const mazo = elegidas.concat(elegidas).sort(() => Math.random() - 0.5);
 
-  capa.style.background = "linear-gradient(#5f72be, #9b23ea)";
+  pantallaJuego.style.background = "linear-gradient(#5f72be, #9b23ea)";
   const grilla = document.createElement("div");
   grilla.id = "memo";
 
@@ -715,11 +715,11 @@ JUEGOS.memo = function () {
   });
   capa.appendChild(grilla);
 
-  function reiniciar() { capa.innerHTML = ""; capa.style.background = ""; juegoActual = JUEGOS.memo(); }
+  function reiniciar() { capa.innerHTML = ""; pantallaJuego.style.background = ""; juegoActual = JUEGOS.memo(); }
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
-    salir() { capa.style.background = ""; particulas = []; }
+    salir() { pantallaJuego.style.background = ""; particulas = []; }
   };
 };
 
@@ -731,7 +731,7 @@ JUEGOS.atrapar = function () {
   let proximo = 0;
   let puntos = 0;
 
-  capa.style.background = "linear-gradient(#ffd6e0, #c2f0ff)";
+  pantallaJuego.style.background = "linear-gradient(#ffd6e0, #c2f0ff)";
   marcador.style.display = "block";
   marcador.textContent = "0";
 
@@ -807,7 +807,7 @@ JUEGOS.atrapar = function () {
       lienzo.removeEventListener("touchmove", mover);
       lienzo.removeEventListener("mousemove", mover);
       lienzo.removeEventListener("mousedown", mover);
-      capa.style.background = "";
+      pantallaJuego.style.background = "";
       particulas = [];
     }
   };
