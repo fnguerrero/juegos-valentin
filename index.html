@@ -143,16 +143,18 @@
 
   /* ---------- NÚMEROS ---------- */
   #zonaNum {
-    position:absolute; left:0; right:0; top:16vmin; bottom:26vmin; z-index:1;
+    position:absolute; left:0; right:0; top:calc(15vmin + 26vh); bottom:24vmin; z-index:1;
     display:flex; flex-wrap:wrap; align-content:center; justify-content:center;
     gap:2vmin; padding:2vmin;
   }
   .cosita { font-size:min(19vw, 17vh); line-height:1; animation:aparecer .45s ease; }
+  /* la cifra arriba y los globos debajo: no se pisan nunca */
   #numGrande {
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-size:min(60vw, 55vh); font-weight:900; color:rgba(255,255,255,.35);
+    position:absolute; top:15vmin; left:0; right:0; height:26vh;
+    display:flex; align-items:center; justify-content:center;
+    font-size:min(34vw, 25vh); font-weight:900; color:rgba(255,255,255,.7);
     pointer-events:none; z-index:0; line-height:1;
-    text-shadow:0 1vmin 2vmin rgba(0,0,0,.12);
+    text-shadow:0 1vmin 2vmin rgba(0,0,0,.18);
   }
   #numGrande.puesto { animation:aparecer .5s ease; }
   @keyframes aparecer {
