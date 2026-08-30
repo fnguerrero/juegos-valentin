@@ -300,6 +300,9 @@ const NOTAS = { C4:261.63, D4:293.66, E4:329.63, G4:392.00, A4:440.00,
                 C3:130.81, G3:196.00, A3:220.00 };
 const _ = null;
 const MELODIAS = {
+  menu:    { paso:0.30, vol:0.07,
+             notas:["C5","G4","A4","C5","E5","D5","C5","A4","G4","A4","C5","D5","E5","G5","E5","C5"],
+             bajo:["C3","A3","G3","C3"] },
   globos:  { paso:0.28, vol:0.075,
              notas:["C5","E5","G5","E5","D5","G5","A5","G5","E5","C5","D5","E5","G5","E5","D5","C5"],
              bajo:["C3","G3","A3","G3"] },
@@ -354,6 +357,7 @@ const musica = (function () {
 
   return {
     arrancar(nombre) {
+      clearInterval(reloj); reloj = null;
       actual = MELODIAS[nombre] || null;
       if (!actual || apagada) return;
       paso = 0;
@@ -450,9 +454,10 @@ function abrir(nombre) {
   btnSonido.classList.toggle("visible", !!MELODIAS[nombre]);
 }
 
-function cerrar() {
+function cerrar(alMenu) {
   musica.parar();
-  btnSonido.classList.remove("visible");
+  if (alMenu) musica.arrancar("menu");
+  btnSonido.classList.toggle("visible", !!alMenu);
   cancelAnimationFrame(cuadro);
   if (juegoActual && juegoActual.salir) juegoActual.salir();
   juegoActual = null;
@@ -466,7 +471,7 @@ function cerrar() {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
-btnVolver.addEventListener("click", cerrar);
+btnVolver.addEventListener("click", () => cerrar(true));
 btnSonido.addEventListener("click", () => {
   btnSonido.textContent = musica.alternar() ? "🔇" : "🔊";
 });
@@ -924,6 +929,18 @@ JUEGOS.atrapar = function () {
    ARRANQUE
    ============================================================ */
 medir();
+
+// El navegador no deja sonar nada hasta que el dedo toca la pantalla:
+// el primer toque en el menú (fuera de una tarjeta) enciende la música.
+document.addEventListener("pointerdown", function arranque(ev) {
+  if (ev.target.closest(".tarjeta")) return;
+  document.removeEventListener("pointerdown", arranque);
+  if (menu.style.display !== "none") {
+    musica.arrancar("menu");
+    btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
+    btnSonido.classList.add("visible");
+  }
+});
 
 // Con esto el celular la ofrece como app y sigue andando sin internet
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
