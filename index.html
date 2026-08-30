@@ -508,6 +508,15 @@ if ("speechSynthesis" in window) {
   elegirVoz();
   speechSynthesis.addEventListener("voiceschanged", elegirVoz);
 }
+/* La felicitación varía: casi siempre "Valen", cada tanto el nombre completo
+   y de vez en cuando sin nombre, para que no suene siempre igual. */
+function felicitar() {
+  const suerte = Math.random();
+  decir(suerte < 0.7 ? "¡Muy bien Valen!"
+      : suerte < 0.9 ? "¡Muy bien Valentín!"
+      : "¡Muy bien!");
+}
+
 function decir(texto) {
   if (!("speechSynthesis" in window)) return;
   if (!vozEs) elegirVoz();          // la lista de voces llega tarde en Android
@@ -957,7 +966,7 @@ JUEGOS.memo = function () {
           if (++resueltas === 3) {
             setTimeout(() => {
               fanfarria();
-              decir("¡Muy bien Valen!");
+              felicitar();
               for (let i = 0; i < 14; i++) {
                 setTimeout(() => estallar(Math.random() * A, H * 0.3, alAzar(COLORES), 16), i * 70);
               }
@@ -1050,7 +1059,7 @@ JUEGOS.atrapar = function () {
           puntos++;
           marcador.textContent = puntos;
           nota(500 + Math.min(puntos, 12) * 40, 0.25, "triangle", 0.2);
-          if (puntos % 3 === 0) { fanfarria(); decir("¡Muy bien Valen!"); }
+          if (puntos % 3 === 0) { fanfarria(); felicitar(); }
           continue;
         }
         // se cayó: rebota y desaparece, sin penalización
