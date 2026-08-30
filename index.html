@@ -106,8 +106,8 @@
   /* celdas cuadradas que entren siempre, también con la tablet acostada */
   .tablero {
     position:absolute; inset:0; padding:16vmin 3vmin 3vmin;
-    display:grid; gap:2.5vmin; align-content:center; justify-content:center;
-    grid-template-columns:repeat(3, min(28vw, 23vh));
+    display:grid; gap:5.5vmin; align-content:center; justify-content:center;
+    grid-template-columns:repeat(3, min(25vw, 21vh));
   }
   .bicho {
     border:none; border-radius:5vmin; background:rgba(255,255,255,.92);
@@ -116,6 +116,17 @@
     box-shadow:0 1vmin 0 rgba(0,0,0,.18);
     transition:transform .15s ease;
   }
+  #anuncio {
+    position:absolute; top:3vmin; left:16vmin; right:16vmin; z-index:45;
+    text-align:center; font-size:min(9vw, 7vh); font-weight:900; color:#fff;
+    text-shadow:0 .5vmin 0 rgba(0,0,0,.3); opacity:0; transition:opacity .2s ease;
+    pointer-events:none;
+  }
+  #anuncio.visible { opacity:1; }
+  /* mientras suena un animal no se puede tocar otro */
+  #capa .tablero.esperando { pointer-events:none; }
+  #capa .tablero.esperando .bicho:not(.saltando) { opacity:.55; transition:opacity .2s ease; }
+
   .bicho:active { transform:scale(1.15) rotate(-6deg); }
   .bicho.saltando { animation:saltar .6s ease; }
   @keyframes saltar {
@@ -762,8 +773,11 @@ JUEGOS.granja = function () {
   precargar(bichos.map(b => b.a));
 
   pantallaJuego.style.background = "linear-gradient(#a8e063, #56ab2f)";
+  const anuncio = document.createElement("div");
+  anuncio.id = "anuncio";
   const tablero = document.createElement("div");
   tablero.className = "tablero";
+  let esperando = null;
 
   bichos.forEach(b => {
     const btn = document.createElement("button");
@@ -775,19 +789,32 @@ JUEGOS.granja = function () {
       btn.classList.add("saltando");
       const dura = grabacion(b.a);              // el sonido sale al toque
       if (!dura) bicho(b.s, b.t);               // (si no cargó, el sintetizado)
+
+      // hasta que no termina este animal, no se puede tocar otro
+      clearTimeout(esperando);
+      tablero.classList.add("esperando");
+      esperando = setTimeout(() => tablero.classList.remove("esperando"),
+                             (dura || 900) + 1900);
+
       // la voz entra apenas termina el animal, casi pegada
-      setTimeout(() => decir(b.n), (dura || 900) + 300);
+      setTimeout(() => {
+        decir(b.n);
+        anuncio.textContent = b.n;              // y el nombre se ve, haya voz o no
+        anuncio.classList.add("visible");
+      }, (dura || 900) + 300);
+      setTimeout(() => anuncio.classList.remove("visible"), (dura || 900) + 1900);
 
       const r = btn.getBoundingClientRect();
       estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 14);
     });
     tablero.appendChild(btn);
   });
+  capa.appendChild(anuncio);
   capa.appendChild(tablero);
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
-    salir() { pantallaJuego.style.background = ""; particulas = []; }
+    salir() { clearTimeout(esperando); pantallaJuego.style.background = ""; particulas = []; }
   };
 };
 
