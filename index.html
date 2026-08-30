@@ -235,7 +235,7 @@
 
   /* ---------- ATRAPAR ---------- */
   #cesta { position:absolute; z-index:30; font-size:42vmin; pointer-events:none;
-           bottom:2vmin; transform:translateX(-50%); transition:none; }
+           bottom:9vmin; transform:translateX(-50%); transition:none; }
   #sonido {
     position:absolute; top:2vmin; right:2vmin; z-index:50;
     width:13vmin; height:13vmin; border:none; border-radius:50%;
@@ -1041,7 +1041,7 @@ JUEGOS.atrapar = function () {
         proximo = 170 + Math.random() * 110;  // y de a una por vez, sin amontonarse
       }
 
-      const pisoY = H - Math.min(A, H) * 0.32;
+      const pisoY = H - Math.min(A, H) * 0.39;
 
       cv.font = tam + "px serif";
       cv.textAlign = "center";
