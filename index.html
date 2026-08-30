@@ -220,7 +220,7 @@
   .carta.lista .cara { opacity:1; }
 
   /* ---------- ATRAPAR ---------- */
-  #cesta { position:absolute; z-index:30; font-size:24vmin; pointer-events:none;
+  #cesta { position:absolute; z-index:30; font-size:33vmin; pointer-events:none;
            bottom:2vmin; transform:translateX(-50%); transition:none; }
   #sonido {
     position:absolute; top:2vmin; right:2vmin; z-index:50;
@@ -984,7 +984,7 @@ JUEGOS.atrapar = function () {
   return {
     dibujar() {
       cv.clearRect(0, 0, A, H);
-      const tam = Math.min(A, H) * 0.17; // se recalcula por si rotó la pantalla
+      const tam = Math.min(A, H) * 0.24; // se recalcula por si rotó la pantalla
 
       if (--proximo <= 0) {
         cosas.push({
@@ -998,7 +998,7 @@ JUEGOS.atrapar = function () {
         proximo = 170 + Math.random() * 110;  // y de a una por vez, sin amontonarse
       }
 
-      const pisoY = H - Math.min(A, H) * 0.20;
+      const pisoY = H - Math.min(A, H) * 0.27;
 
       cv.font = tam + "px serif";
       cv.textAlign = "center";
@@ -1010,13 +1010,13 @@ JUEGOS.atrapar = function () {
         c.ang += c.giro;
 
         // ¿la atrapó?
-        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.16) {
+        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.22) {
           estallar(c.x, c.y, alAzar(COLORES), 18);
           cosas.splice(i, 1);
           puntos++;
           marcador.textContent = puntos;
           nota(500 + Math.min(puntos, 12) * 40, 0.25, "triangle", 0.2);
-          if (puntos % 10 === 0) { fanfarria(); decir("¡Muy bien Valen!"); }
+          if (puntos % 3 === 0) { fanfarria(); decir("¡Muy bien Valen!"); }
           continue;
         }
         // se cayó: rebota y desaparece, sin penalización
