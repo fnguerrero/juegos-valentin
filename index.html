@@ -92,7 +92,7 @@
   #capa > * { pointer-events:auto; }
 
   #volver {
-    position:absolute; top:2vmin; left:2vmin; z-index:50;
+    position:absolute; top:2vmin; left:2vmin; z-index:70;
     width:13vmin; height:13vmin; border:none; border-radius:50%;
     background:rgba(255,255,255,.9); color:#1b2a6b;
     font-size:7vmin; line-height:1; cursor:pointer;
@@ -181,6 +181,19 @@
     transition:filter .08s ease;
   }
   .tecla.tocando { filter:brightness(1.45); }
+
+  #girar {
+    position:absolute; inset:0; z-index:60; display:none;
+    flex-direction:column; align-items:center; justify-content:center; gap:4vmin;
+    background:#241a3a; color:#fff; text-align:center; padding:6vmin;
+  }
+  #girar .flecha { font-size:26vmin; animation:girando 2.2s ease-in-out infinite; }
+  #girar .texto { font-size:7vmin; font-weight:900; }
+  @keyframes girando {
+    0%,100% { transform:rotate(0) }
+    50% { transform:rotate(90deg) }
+  }
+  @media (orientation: portrait) { #girar { display:flex; } }
 
   /* ---------- PINTAR ---------- */
   #paleta {
@@ -781,6 +794,21 @@ JUEGOS.piano = function () {
   ];
 
   pantallaJuego.style.background = "#241a3a";
+
+  // El piano se toca con el celular acostado: se intenta trabar la pantalla
+  // en horizontal y, si el celular no deja, se pide girarlo.
+  if (screen.orientation && screen.orientation.lock) {
+    const enPantallaCompleta = document.fullscreenElement
+      ? Promise.resolve()
+      : (document.documentElement.requestFullscreen
+          ? document.documentElement.requestFullscreen().catch(() => {})
+          : Promise.resolve());
+    enPantallaCompleta.then(() => screen.orientation.lock("landscape").catch(() => {}));
+  }
+  const girar = document.createElement("div");
+  girar.id = "girar";
+  girar.innerHTML = '<div class="flecha">📱</div><div class="texto">Giralo para tocar</div>';
+
   const piano = document.createElement("div");
   piano.id = "piano";
 
@@ -802,10 +830,17 @@ JUEGOS.piano = function () {
     piano.appendChild(k);
   });
   capa.appendChild(piano);
+  capa.appendChild(girar);
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
-    salir() { pantallaJuego.style.background = ""; particulas = []; }
+    salir() {
+      if (screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (e) {}
+      }
+      pantallaJuego.style.background = "";
+      particulas = [];
+    }
   };
 };
 
