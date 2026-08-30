@@ -1,7 +1,7 @@
 /* Service worker: deja la app usable sin internet una vez abierta.
    - El HTML va por red primero, así una versión nueva llega apenas se publica.
    - Los sonidos e íconos van por caché primero: no cambian y así cargan al toque. */
-const CACHE = "valen-v4";  // subir esto cada vez que cambie un sonido o un icono
+const CACHE = "valen-v5";  // subir esto cada vez que cambie un sonido o un icono
 const ESTATICOS = [
   "./", "./index.html", "./manifest.json",
   "./icono-192.png", "./icono-512.png", "./apple-touch-icon.png",
@@ -33,9 +33,10 @@ self.addEventListener("fetch", ev => {
   const esPagina = req.mode === "navigate" || req.destination === "document";
 
   if (esPagina) {
-    // red primero, con la copia guardada como respaldo si no hay señal
+    // red primero y SIN la caché del navegador: si no, sigue sirviendo la
+    // versión vieja del HTML aunque ya haya una publicada.
     ev.respondWith(
-      fetch(req)
+      fetch(new Request(req.url, { cache: "reload", credentials: "same-origin" }))
         .then(res => {
           const copia = res.clone();
           caches.open(CACHE).then(c => c.put("./index.html", copia));
