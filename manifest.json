@@ -1,7 +1,7 @@
 {
   "name": "Los juegos de Valen",
   "short_name": "Valen",
-  "description": "Seis juegos táctiles para los más chiquitos: globos, animales, piano, pintar, memotest y atrapar frutas.",
+  "description": "Ocho juegos táctiles para los más chiquitos: globos, animales, piano, pintar, memotest, atrapar frutas, la familia y los números.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
