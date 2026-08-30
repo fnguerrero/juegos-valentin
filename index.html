@@ -68,9 +68,9 @@
 
   /* De pie: dos columnas y botones bien grandes, que es como lo va a usar */
   @media (orientation: portrait) {
-    #grid { grid-template-columns:repeat(2, min(42vw, 26vh)); gap:3vmin; }
-    .tarjeta .dibujo { font-size:min(16vw, 13vh); }
-    .tarjeta .nombre { font-size:min(4.4vw, 3.4vh); }
+    #grid { grid-template-columns:repeat(2, min(40vw, 19vh)); gap:2.4vmin; }
+    .tarjeta .dibujo { font-size:min(14vw, 8.5vh); }
+    .tarjeta .nombre { font-size:min(3.8vw, 2.4vh); }
   }
   .tarjeta:active { transform:scale(.92) translateY(.6vmin); }
   .tarjeta:nth-child(1){ background:linear-gradient(160deg,#ff8f8f,#e84747); animation-delay:0s;   animation-duration:3.0s }
@@ -79,6 +79,8 @@
   .tarjeta:nth-child(4){ background:linear-gradient(160deg,#6ee6ae,#1da96c); animation-delay:.75s; animation-duration:3.6s }
   .tarjeta:nth-child(5){ background:linear-gradient(160deg,#82d9fb,#1c9fd8); animation-delay:1s;   animation-duration:3.1s }
   .tarjeta:nth-child(6){ background:linear-gradient(160deg,#dfa6ff,#a44ce6); animation-delay:1.25s;animation-duration:3.3s }
+  .tarjeta:nth-child(7){ background:linear-gradient(160deg,#ffa8c5,#e8447f); animation-delay:1.5s; animation-duration:2.9s }
+  .tarjeta:nth-child(8){ background:linear-gradient(160deg,#8fe3d8,#17a89a); animation-delay:1.75s;animation-duration:3.5s }
   @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1.2vmin) } }
 
   /* ---------- PANTALLA DE JUEGO ---------- */
@@ -121,6 +123,47 @@
     30%{ transform:scale(1.3) rotate(8deg) }
     60%{ transform:scale(1.1) rotate(-8deg) }
   }
+
+  /* ---------- FAMILIA ---------- */
+  .tablero.seis { grid-template-columns:repeat(3, min(28vw, 30vh)); }
+  @media (orientation: portrait) {
+    .tablero.seis { grid-template-columns:repeat(2, min(40vw, 24vh)); gap:3vmin; }
+  }
+  .persona {
+    border:none; border-radius:5vmin; background:rgba(255,255,255,.94);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:1vmin; padding:2vmin; cursor:pointer; aspect-ratio:1/1;
+    box-shadow:0 1vmin 0 rgba(0,0,0,.18);
+    transition:transform .15s ease;
+  }
+  .persona .cara2 { font-size:min(13vw, 12vh); line-height:1; }
+  .persona .quien { font-size:min(4vw, 3.4vh); font-weight:900; color:#8a3b57; }
+  .persona:active { transform:scale(1.12); }
+  .persona.saltando { animation:saltar .6s ease; }
+
+  /* ---------- NÚMEROS ---------- */
+  #zonaNum {
+    position:absolute; left:0; right:0; top:16vmin; bottom:26vmin;
+    display:flex; flex-wrap:wrap; align-content:center; justify-content:center;
+    gap:2vmin; padding:2vmin;
+  }
+  .cosita { font-size:min(19vw, 17vh); line-height:1; animation:aparecer .45s ease; }
+  @keyframes aparecer {
+    0% { transform:scale(0) rotate(-25deg); opacity:0 }
+    70% { transform:scale(1.25) rotate(6deg); opacity:1 }
+    100% { transform:scale(1) rotate(0); opacity:1 }
+  }
+  #filaNum {
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex; gap:1.5vmin; padding:2vmin;
+  }
+  .numero {
+    flex:1; aspect-ratio:1/1; max-height:20vmin; border:none; border-radius:3.5vmin;
+    font-size:min(9vw, 9vh); font-weight:900; color:#fff; cursor:pointer;
+    box-shadow:0 1vmin 0 rgba(0,0,0,.25);
+    text-shadow:0 .4vmin .6vmin rgba(0,0,0,.3);
+  }
+  .numero:active { transform:scale(.9); }
 
   /* ---------- PIANO ---------- */
   #piano { position:absolute; inset:0; display:flex; padding-top:16vmin; }
@@ -201,6 +244,8 @@
       <button class="tarjeta" data-juego="pintar"><span class="dibujo">🎨</span><span class="nombre">Pintar</span></button>
       <button class="tarjeta" data-juego="memo"><span class="dibujo">🃏</span><span class="nombre">Memoria</span></button>
       <button class="tarjeta" data-juego="atrapar"><span class="dibujo">🧺</span><span class="nombre">Atrapar</span></button>
+      <button class="tarjeta" data-juego="familia"><span class="dibujo">👨‍👩‍👦</span><span class="nombre">Familia</span></button>
+      <button class="tarjeta" data-juego="numeros"><span class="dibujo">🔢</span><span class="nombre">Números</span></button>
     </div>
   </div>
 
@@ -981,6 +1026,103 @@ JUEGOS.atrapar = function () {
       lienzo.removeEventListener("touchmove", mover);
       lienzo.removeEventListener("mousemove", mover);
       lienzo.removeEventListener("mousedown", mover);
+      pantallaJuego.style.background = "";
+      particulas = [];
+    }
+  };
+};
+
+
+/* --- 7. FAMILIA: toca a cada uno y la voz dice quién es --- */
+JUEGOS.familia = function () {
+  const gente = [
+    { e: "👨", n: "papá"   }, { e: "👩", n: "mamá"  },
+    { e: "👴", n: "abuelo" }, { e: "👵", n: "abuela" },
+    { e: "🧔", n: "tío"    }, { e: "👩‍🦰", n: "tía" }
+  ];
+
+  pantallaJuego.style.background = "linear-gradient(#ffd3a5, #fd6585)";
+  const tablero = document.createElement("div");
+  tablero.className = "tablero seis";
+
+  gente.forEach(g => {
+    const btn = document.createElement("button");
+    btn.className = "persona";
+    btn.innerHTML = '<span class="cara2">' + g.e + '</span><span class="quien">' + g.n + "</span>";
+    btn.addEventListener("click", () => {
+      btn.classList.remove("saltando");
+      void btn.offsetWidth;
+      btn.classList.add("saltando");
+      nota(560, 0.18, "sine", 0.16);
+      decir(g.n);
+      const r = btn.getBoundingClientRect();
+      estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 16);
+    });
+    tablero.appendChild(btn);
+  });
+  capa.appendChild(tablero);
+
+  return {
+    dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
+    salir() { pantallaJuego.style.background = ""; particulas = []; }
+  };
+};
+
+/* --- 8. NÚMEROS: toca un número y aparecen esas cosas mientras la voz cuenta --- */
+JUEGOS.numeros = function () {
+  const PALABRAS = ["uno", "dos", "tres", "cuatro", "cinco"];
+  const COSAS = ["🍎", "⭐", "🐤", "🎈", "🍓", "🐟", "🌻", "🍌"];
+  let relojes = [];
+
+  pantallaJuego.style.background = "linear-gradient(#c2e9fb, #74a9f7)";
+
+  const zona = document.createElement("div");
+  zona.id = "zonaNum";
+  const fila = document.createElement("div");
+  fila.id = "filaNum";
+
+  PALABRAS.forEach((palabra, i) => {
+    const cuantos = i + 1;
+    const b = document.createElement("button");
+    b.className = "numero";
+    b.textContent = cuantos;
+    b.style.background = COLORES[i];
+    b.addEventListener("click", () => {
+      relojes.forEach(clearTimeout);          // si toca otro número, empieza de nuevo
+      relojes = [];
+      zona.innerHTML = "";
+      if ("speechSynthesis" in window) speechSynthesis.cancel();
+      const cosa = alAzar(COSAS);
+      for (let k = 1; k <= cuantos; k++) {
+        relojes.push(setTimeout(() => {
+          const sp = document.createElement("span");
+          sp.className = "cosita";
+          sp.textContent = cosa;
+          zona.appendChild(sp);
+          nota(392 + k * 70, 0.3, "triangle", 0.2);   // cada una más aguda
+          decir(PALABRAS[k - 1]);                      // uno, dos, tres...
+          if (k === cuantos) {
+            relojes.push(setTimeout(() => {
+              const r = zona.getBoundingClientRect();
+              for (let j = 0; j < 3; j++) {          // un chispazo corto, sin taparlas
+                estallar(r.left + r.width * (0.25 + j * 0.25), r.top + r.height * 0.5,
+                         alAzar(COLORES), 8);
+              }
+            }, 500));
+          }
+        }, (k - 1) * 850));
+      }
+    });
+    fila.appendChild(b);
+  });
+
+  capa.appendChild(zona);
+  capa.appendChild(fila);
+
+  return {
+    dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
+    salir() {
+      relojes.forEach(clearTimeout);
       pantallaJuego.style.background = "";
       particulas = [];
     }
