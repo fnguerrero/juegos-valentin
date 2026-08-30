@@ -853,12 +853,7 @@ JUEGOS.piano = function () {
   // El piano se toca con el celular acostado: se intenta trabar la pantalla
   // en horizontal y, si el celular no deja, se pide girarlo.
   if (screen.orientation && screen.orientation.lock) {
-    const enPantallaCompleta = document.fullscreenElement
-      ? Promise.resolve()
-      : (document.documentElement.requestFullscreen
-          ? document.documentElement.requestFullscreen().catch(() => {})
-          : Promise.resolve());
-    enPantallaCompleta.then(() => screen.orientation.lock("landscape").catch(() => {}));
+    try { screen.orientation.lock("landscape").catch(() => {}); } catch (e) {}
   }
   const piano = document.createElement("div");
   piano.id = "piano";
@@ -1332,10 +1327,6 @@ window.addEventListener("pagehide", () => {
 document.addEventListener("pointerdown", function arranque(ev) {
   if (ev.target.closest(".tarjeta")) return;
   document.removeEventListener("pointerdown", arranque);
-  // pantalla completa: menos superficie para que el nene se salga sin querer
-  if (matchMedia("(pointer: coarse)").matches && document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
   if (menu.style.display !== "none") {
     musica.arrancar("menu");
     btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
