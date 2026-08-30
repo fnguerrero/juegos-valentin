@@ -31,8 +31,8 @@
     letter-spacing:.05em;
   }
   #grid {
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:2.5vmin;
-    width:100%; max-width:150vmin;
+    display:grid; grid-template-columns:repeat(3, min(29vw, 24vh)); gap:2.5vmin;
+    justify-content:center;
   }
   .tarjeta {
     aspect-ratio:1/1;
@@ -72,9 +72,11 @@
   #volver:active { transform:scale(.9); }
 
   /* ---------- GRANJA ---------- */
+  /* celdas cuadradas que entren siempre, también con la tablet acostada */
   .tablero {
     position:absolute; inset:0; padding:16vmin 3vmin 3vmin;
-    display:grid; gap:2.5vmin; align-content:center;
+    display:grid; gap:2.5vmin; align-content:center; justify-content:center;
+    grid-template-columns:repeat(3, min(28vw, 23vh));
   }
   .bicho {
     border:none; border-radius:5vmin; background:rgba(255,255,255,.92);
@@ -120,7 +122,8 @@
   /* ---------- MEMOTEST ---------- */
   #memo {
     position:absolute; inset:0; padding:16vmin 3vmin 3vmin;
-    display:grid; grid-template-columns:repeat(3,1fr); gap:2.5vmin; align-content:center;
+    display:grid; gap:2.5vmin; align-content:center; justify-content:center;
+    grid-template-columns:repeat(3, min(28vw, 32vh));
   }
   .carta {
     aspect-ratio:1/1; border:none; border-radius:5vmin; cursor:pointer;
@@ -486,7 +489,6 @@ JUEGOS.granja = function () {
   capa.style.background = "linear-gradient(#a8e063, #56ab2f)";
   const tablero = document.createElement("div");
   tablero.className = "tablero";
-  tablero.style.gridTemplateColumns = "repeat(3, 1fr)";
 
   bichos.forEach(b => {
     const btn = document.createElement("button");
@@ -790,6 +792,10 @@ JUEGOS.atrapar = function () {
    ARRANQUE
    ============================================================ */
 medir();
+
+// Link directo a un juego: .../#granja abre la granja sin pasar por el menú
+if (JUEGOS[location.hash.slice(1)]) abrir(location.hash.slice(1));
+
 // Evita el zoom por doble toque y el scroll de rebote
 document.addEventListener("gesturestart", e => e.preventDefault());
 document.addEventListener("dblclick", e => e.preventDefault());
