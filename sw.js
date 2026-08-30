@@ -1,7 +1,7 @@
 /* Service worker: deja la app usable sin internet una vez abierta.
    - El HTML va por red primero, así una versión nueva llega apenas se publica.
    - Los sonidos e íconos van por caché primero: no cambian y así cargan al toque. */
-const CACHE = "valen-v5";  // subir esto cada vez que cambie un sonido o un icono
+const CACHE = "valen-v6";  // subir esto cada vez que cambie un sonido o un icono
 const ESTATICOS = [
   "./", "./index.html", "./manifest.json",
   "./icono-192.png", "./icono-512.png", "./apple-touch-icon.png",
