@@ -143,11 +143,18 @@
 
   /* ---------- NÚMEROS ---------- */
   #zonaNum {
-    position:absolute; left:0; right:0; top:16vmin; bottom:26vmin;
+    position:absolute; left:0; right:0; top:16vmin; bottom:26vmin; z-index:1;
     display:flex; flex-wrap:wrap; align-content:center; justify-content:center;
     gap:2vmin; padding:2vmin;
   }
   .cosita { font-size:min(19vw, 17vh); line-height:1; animation:aparecer .45s ease; }
+  #numGrande {
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:min(60vw, 55vh); font-weight:900; color:rgba(255,255,255,.35);
+    pointer-events:none; z-index:0; line-height:1;
+    text-shadow:0 1vmin 2vmin rgba(0,0,0,.12);
+  }
+  #numGrande.puesto { animation:aparecer .5s ease; }
   @keyframes aparecer {
     0% { transform:scale(0) rotate(-25deg); opacity:0 }
     70% { transform:scale(1.25) rotate(6deg); opacity:1 }
@@ -402,6 +409,9 @@ const MELODIAS = {
   memo:    { paso:0.36, vol:0.07,
              notas:["E5","G5",_,"D5","C5",_,"E5",_,"G5","A5",_,"E5","D5",_,"C5",_],
              bajo:["C3","G3","A3","G3"] },
+  numeros: { paso:0.5, vol:0.042,
+             notas:["C5",_,_,"G4",_,_,"A4",_,_,"C5",_,_,"E5",_,_,_],
+             bajo:["C3","G3","A3","C3"] },
   atrapar: { paso:0.26, vol:0.07,
              notas:["C5","C5","E5","G5","A5","G5","E5","D5","C5","E5","D5","C5","A4","C5","D5","E5"],
              bajo:["C3","C3","G3","A3"] }
@@ -1071,13 +1081,14 @@ JUEGOS.familia = function () {
 /* --- 8. NÚMEROS: toca un número y aparecen esas cosas mientras la voz cuenta --- */
 JUEGOS.numeros = function () {
   const PALABRAS = ["uno", "dos", "tres", "cuatro", "cinco"];
-  const COSAS = ["🍎", "⭐", "🐤", "🎈", "🍓", "🐟", "🌻", "🍌"];
   let relojes = [];
 
   pantallaJuego.style.background = "linear-gradient(#c2e9fb, #74a9f7)";
 
   const zona = document.createElement("div");
   zona.id = "zonaNum";
+  const grande = document.createElement("div");   // la cifra, grandota, detrás de los globos
+  grande.id = "numGrande";
   const fila = document.createElement("div");
   fila.id = "filaNum";
 
@@ -1092,30 +1103,40 @@ JUEGOS.numeros = function () {
       relojes = [];
       zona.innerHTML = "";
       if ("speechSynthesis" in window) speechSynthesis.cancel();
-      const cosa = alAzar(COSAS);
+
+      grande.textContent = cuantos;         // la cifra aparece grande atrás
+      grande.classList.remove("puesto");
+      void grande.offsetWidth;
+      grande.classList.add("puesto");
+      nota(660, 0.25, "sine", 0.2);
+      decir(palabra);                       // y la voz dice qué número es
+
       for (let k = 1; k <= cuantos; k++) {
         relojes.push(setTimeout(() => {
           const sp = document.createElement("span");
           sp.className = "cosita";
-          sp.textContent = cosa;
+          sp.textContent = "🎈";            // siempre globos: la cifra es lo que cambia
           zona.appendChild(sp);
           nota(392 + k * 70, 0.3, "triangle", 0.2);   // cada una más aguda
           decir(PALABRAS[k - 1]);                      // uno, dos, tres...
           if (k === cuantos) {
             relojes.push(setTimeout(() => {
+              fanfarria();
+              decir("¡" + palabra + " globos!");      // y cierra diciendo cuántos son
               const r = zona.getBoundingClientRect();
-              for (let j = 0; j < 3; j++) {          // un chispazo corto, sin taparlas
+              for (let j = 0; j < 3; j++) {           // un chispazo corto, sin taparlos
                 estallar(r.left + r.width * (0.25 + j * 0.25), r.top + r.height * 0.5,
                          alAzar(COLORES), 8);
               }
-            }, 500));
+            }, 700));
           }
-        }, (k - 1) * 850));
+        }, 800 + (k - 1) * 850));
       }
     });
     fila.appendChild(b);
   });
 
+  capa.appendChild(grande);
   capa.appendChild(zona);
   capa.appendChild(fila);
 
