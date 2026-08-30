@@ -4,7 +4,7 @@
   "description": "Ocho juegos táctiles para los más chiquitos: globos, animales, piano, pintar, memotest, atrapar frutas, la familia y los números.",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#1b2a6b",
   "theme_color": "#1b2a6b",
@@ -28,9 +28,5 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "display_override": [
-    "fullscreen",
-    "standalone"
   ]
 }
