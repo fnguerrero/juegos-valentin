@@ -234,7 +234,7 @@
   .carta.lista .cara { opacity:1; }
 
   /* ---------- ATRAPAR ---------- */
-  #cesta { position:absolute; z-index:30; font-size:33vmin; pointer-events:none;
+  #cesta { position:absolute; z-index:30; font-size:42vmin; pointer-events:none;
            bottom:2vmin; transform:translateX(-50%); transition:none; }
   #sonido {
     position:absolute; top:2vmin; right:2vmin; z-index:50;
@@ -992,6 +992,7 @@ JUEGOS.atrapar = function () {
   let cestaX = A / 2;
   let proximo = 0;
   let puntos = 0;
+  let caidas = 0;                       // las dos primeras nunca son banana
 
   pantallaJuego.style.background = "linear-gradient(#ffd6e0, #c2f0ff)";
   marcador.style.display = "block";
@@ -1026,12 +1027,12 @@ JUEGOS.atrapar = function () {
           v: 1.1 + Math.random() * 0.5,   // bien lentas: hay tiempo de sobra para llegar
           giro: (Math.random() - 0.5) * 0.06,
           ang: 0,
-          e: alAzar(frutas)
+          e: caidas++ < 2 ? alAzar(frutas.filter(f => f !== "🍌")) : alAzar(frutas)
         });
         proximo = 170 + Math.random() * 110;  // y de a una por vez, sin amontonarse
       }
 
-      const pisoY = H - Math.min(A, H) * 0.27;
+      const pisoY = H - Math.min(A, H) * 0.32;
 
       cv.font = tam + "px serif";
       cv.textAlign = "center";
@@ -1043,7 +1044,7 @@ JUEGOS.atrapar = function () {
         c.ang += c.giro;
 
         // ¿la atrapó?
-        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.22) {
+        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.28) {
           estallar(c.x, c.y, alAzar(COLORES), 18);
           cosas.splice(i, 1);
           puntos++;
