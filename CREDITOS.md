@@ -10,7 +10,7 @@ normalizadas, pero son las originales. Cada una con su autor y su licencia:
 - **gallina** — [Hen announcing shes lain an egg.ogg](https://commons.wikimedia.org/wiki/File:Hen_announcing_shes_lain_an_egg.ogg) · alys · Public domain
 - **caballo** — [Wiehern.ogg](https://commons.wikimedia.org/wiki/File:Wiehern.ogg) · Hü. · Public domain
 - **rana** — [Single Frog Croak.oga](https://commons.wikimedia.org/wiki/File:Single_Frog_Croak.oga) · MichaeltheFox8621 · CC BY-SA 4.0
-- **leon** — [Lionroar.wav](https://commons.wikimedia.org/wiki/File:Lionroar.wav) · Jonathan Growcott, Alex Lobora, Andrew Markham, Charlotte E. Searle, Johan Wahlström, Matthew Wijers, Benno I. Simmons · CC BY 4.0
+- **leon** — [Lion Mad.ogg](https://commons.wikimedia.org/wiki/File:Lion_Mad.ogg) · Bilberryerer · CC BY-SA 4.0
 - **oveja** — [Sheep bleat.ogg](https://commons.wikimedia.org/wiki/File:Sheep_bleat.ogg) · Eviatar Bach · CC0
 
 Las que son CC BY-SA se usan bajo esa misma licencia. El resto del proyecto es de Nico Guerrero.
