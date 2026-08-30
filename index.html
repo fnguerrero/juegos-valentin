@@ -143,8 +143,17 @@
   /* ---------- ATRAPAR ---------- */
   #cesta { position:absolute; z-index:30; font-size:16vmin; pointer-events:none;
            bottom:2vmin; transform:translateX(-50%); transition:none; }
+  #sonido {
+    position:absolute; top:2vmin; right:2vmin; z-index:50;
+    width:13vmin; height:13vmin; border:none; border-radius:50%;
+    background:rgba(255,255,255,.9); font-size:6vmin; line-height:1; cursor:pointer;
+    box-shadow:0 .8vmin 0 rgba(0,0,0,.2);
+    display:none; align-items:center; justify-content:center;
+  }
+  #sonido.visible { display:flex; }
+  #sonido:active { transform:scale(.9); }
   #marcador {
-    position:absolute; top:2vmin; right:3vmin; z-index:50;
+    position:absolute; top:3vmin; right:17vmin; z-index:50;
     font-size:8vmin; color:#fff; font-weight:900;
     text-shadow:0 .5vmin 0 rgba(0,0,0,.3); display:none;
   }
@@ -172,6 +181,7 @@
   </div>
 
   <button id="volver">⬅️</button>
+  <button id="sonido">🔊</button>
 </div>
 
 <script>
@@ -275,6 +285,89 @@ function bicho(pasos, tipo = "sawtooth", vol = 0.18) {
   });
 }
 
+/* ---------- MÚSICA DE FONDO ----------
+   Melodías en escala pentatónica (nunca suenan desafinadas) con timbre de
+   cajita de música. Se generan al vuelo: no hay archivos ni loops que corten.
+   Solo en los juegos donde el sonido no es el juego (la granja y el piano van
+   en silencio). Se apaga con el botón de arriba y la elección queda guardada. */
+const NOTAS = { C4:261.63, D4:293.66, E4:329.63, G4:392.00, A4:440.00,
+                C5:523.25, D5:587.33, E5:659.25, G5:783.99, A5:880.00,
+                C3:130.81, G3:196.00, A3:220.00 };
+const _ = null;
+const MELODIAS = {
+  globos:  { paso:0.28, vol:0.075,
+             notas:["C5","E5","G5","E5","D5","G5","A5","G5","E5","C5","D5","E5","G5","E5","D5","C5"],
+             bajo:["C3","G3","A3","G3"] },
+  pintar:  { paso:0.44, vol:0.065,
+             notas:["C5",_,"E5",_,"G5",_,"E5",_,"A4",_,"C5",_,"G4",_,_,_],
+             bajo:["C3","A3","G3","C3"] },
+  memo:    { paso:0.36, vol:0.07,
+             notas:["E5","G5",_,"D5","C5",_,"E5",_,"G5","A5",_,"E5","D5",_,"C5",_],
+             bajo:["C3","G3","A3","G3"] },
+  atrapar: { paso:0.26, vol:0.07,
+             notas:["C5","C5","E5","G5","A5","G5","E5","D5","C5","E5","D5","C5","A4","C5","D5","E5"],
+             bajo:["C3","C3","G3","A3"] }
+};
+
+const musica = (function () {
+  let reloj = null, proxima = 0, paso = 0, actual = null;
+  let apagada = false;
+  try { apagada = localStorage.getItem("valen-musica") === "no"; } catch (e) {}
+
+  // Una nota de cajita: fundamental suave + un armónico que se apaga antes
+  function campana(frec, cuando, dur, vol) {
+    const ac = audio();
+    [[1, vol], [2, vol * 0.28]].forEach(([mult, v]) => {
+      const osc = ac.createOscillator(), gan = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.value = frec * mult;
+      gan.gain.setValueAtTime(0, cuando);
+      gan.gain.linearRampToValueAtTime(v, cuando + 0.015);
+      gan.gain.exponentialRampToValueAtTime(0.0001, cuando + dur / mult);
+      osc.connect(gan).connect(ac.destination);
+      osc.start(cuando);
+      osc.stop(cuando + dur + 0.1);
+    });
+  }
+
+  // Programa por adelantado: así no se entrecorta si el navegador se distrae
+  function agendar() {
+    if (!actual) return;
+    const ac = audio();
+    while (proxima < ac.currentTime + 0.4) {
+      if (proxima < ac.currentTime) proxima = ac.currentTime + 0.05;
+      const n = actual.notas[paso % actual.notas.length];
+      if (n) campana(NOTAS[n], proxima, actual.paso * 2.4, actual.vol);
+      if (paso % 4 === 0) {
+        const b = actual.bajo[Math.floor(paso / 4) % actual.bajo.length];
+        campana(NOTAS[b], proxima, actual.paso * 5, actual.vol * 0.5);
+      }
+      proxima += actual.paso;
+      paso++;
+    }
+  }
+
+  return {
+    arrancar(nombre) {
+      actual = MELODIAS[nombre] || null;
+      if (!actual || apagada) return;
+      paso = 0;
+      proxima = audio().currentTime + 0.15;
+      agendar();
+      reloj = setInterval(agendar, 120);
+    },
+    parar() { clearInterval(reloj); reloj = null; actual = null; },
+    get apagada() { return apagada; },
+    alternar() {
+      apagada = !apagada;
+      try { localStorage.setItem("valen-musica", apagada ? "no" : "si"); } catch (e) {}
+      if (apagada) { clearInterval(reloj); reloj = null; }
+      else if (actual) { paso = 0; proxima = audio().currentTime + 0.1; agendar(); reloj = setInterval(agendar, 120); }
+      return apagada;
+    }
+  };
+})();
+
 // Voz en español. Solo habla si el dispositivo tiene una voz española:
 // con la voz por defecto pronunciaría todo en inglés.
 let vozEs = null;
@@ -311,6 +404,7 @@ const capa = document.getElementById("capa");
 const pantallaJuego = document.getElementById("juego");
 const menu = document.getElementById("menu");
 const btnVolver = document.getElementById("volver");
+const btnSonido = document.getElementById("sonido");
 const marcador = document.getElementById("marcador");
 
 let A = 0, H = 0, dpr = 1;
@@ -346,9 +440,14 @@ function abrir(nombre) {
   juegoActual = JUEGOS[nombre]();
   if (juegoActual.dibujar) ciclo();
   audio();
+  musica.arrancar(nombre);
+  btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
+  btnSonido.classList.toggle("visible", !!MELODIAS[nombre]);
 }
 
 function cerrar() {
+  musica.parar();
+  btnSonido.classList.remove("visible");
   cancelAnimationFrame(cuadro);
   if (juegoActual && juegoActual.salir) juegoActual.salir();
   juegoActual = null;
@@ -363,6 +462,9 @@ function cerrar() {
 }
 
 btnVolver.addEventListener("click", cerrar);
+btnSonido.addEventListener("click", () => {
+  btnSonido.textContent = musica.alternar() ? "🔇" : "🔊";
+});
 document.querySelectorAll(".tarjeta").forEach(b => {
   b.addEventListener("click", () => { nota(660, 0.2, "sine", 0.2); abrir(b.dataset.juego); });
 });
