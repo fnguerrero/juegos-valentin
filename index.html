@@ -184,18 +184,17 @@
   }
   .tecla.tocando { filter:brightness(1.45); }
 
-  #girar {
-    position:absolute; inset:0; z-index:60; display:none;
-    flex-direction:column; align-items:center; justify-content:center; gap:4vmin;
-    background:#241a3a; color:#fff; text-align:center; padding:6vmin;
+  /* El piano se toca acostado: en un celular en vertical se muestra ya girado,
+     así se agarra el teléfono de costado y las teclas quedan derechas.
+     En una computadora no se rota nada: el monitor no se puede girar. */
+  @media (orientation: portrait) and (pointer: coarse) {
+    body.acostado #app {
+      width:100vh; height:100vw;
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%, -50%) rotate(90deg);
+      transform-origin:center center;
+    }
   }
-  #girar .flecha { font-size:26vmin; animation:girando 2.2s ease-in-out infinite; }
-  #girar .texto { font-size:7vmin; font-weight:900; }
-  @keyframes girando {
-    0%,100% { transform:rotate(0) }
-    50% { transform:rotate(90deg) }
-  }
-  @media (orientation: portrait) { #girar { display:flex; } }
 
   /* ---------- PINTAR ---------- */
   #paleta {
@@ -807,10 +806,6 @@ JUEGOS.piano = function () {
           : Promise.resolve());
     enPantallaCompleta.then(() => screen.orientation.lock("landscape").catch(() => {}));
   }
-  const girar = document.createElement("div");
-  girar.id = "girar";
-  girar.innerHTML = '<div class="flecha">📱</div><div class="texto">Giralo para tocar</div>';
-
   const piano = document.createElement("div");
   piano.id = "piano";
 
@@ -832,11 +827,12 @@ JUEGOS.piano = function () {
     piano.appendChild(k);
   });
   capa.appendChild(piano);
-  capa.appendChild(girar);
+  document.body.classList.add("acostado");
 
   return {
     dibujar() { cv.clearRect(0, 0, A, H); pintarParticulas(); },
     salir() {
+      document.body.classList.remove("acostado");
       if (screen.orientation && screen.orientation.unlock) {
         try { screen.orientation.unlock(); } catch (e) {}
       }
