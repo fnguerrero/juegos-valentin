@@ -227,8 +227,31 @@ function fanfarria() {
   );
 }
 
+// Grabaciones reales de animales (sonidos/*.mp3, ver CREDITOS.md).
+// Se precargan al abrir la granja; si alguna no está, se cae al sonido sintetizado.
+const pistas = {};
+function precargar(nombres) {
+  nombres.forEach(n => {
+    if (pistas[n]) return;
+    const a = new Audio("sonidos/" + n + ".mp3");
+    a.preload = "auto";
+    a.addEventListener("error", () => { pistas[n] = null; });
+    pistas[n] = a;
+  });
+}
+// Devuelve true si pudo reproducir la grabación
+function grabacion(nombre) {
+  const base = pistas[nombre];
+  if (!base) return false;
+  const s = base.cloneNode();      // clon: se pueden tocar dos animales seguidos
+  s.volume = 0.9;
+  const p = s.play();
+  if (p && p.catch) p.catch(() => {});
+  return true;
+}
+
 // Sonido de animal sintetizado: secuencia de tonos que se deslizan.
-// Suena siempre, tenga o no el celular una voz en español instalada.
+// Es el respaldo, por si las grabaciones no cargan.
 function bicho(pasos, tipo = "sawtooth", vol = 0.18) {
   const ac = audio();
   let t = ac.currentTime;
@@ -473,18 +496,20 @@ JUEGOS.globos = function () {
 
 /* --- 2. GRANJA: toca un animal, lo nombra y hace su sonido --- */
 JUEGOS.granja = function () {
-  // s = pasos del sonido [desde, hasta, duración, pausa], t = timbre
+  // a = archivo con la grabación real; s/t = sonido sintetizado, por si el mp3 no carga
   const bichos = [
-    { e: "🐮", n: "la vaca",    t: "sawtooth", s: [[170, 120, 0.9]] },
-    { e: "🐶", n: "el perro",   t: "square",   s: [[430, 250, 0.12, 0.09], [410, 230, 0.14]] },
-    { e: "🐱", n: "el gato",    t: "triangle", s: [[620, 950, 0.22, 0], [950, 520, 0.4]] },
-    { e: "🐷", n: "el chancho", t: "square",   s: [[320, 200, 0.13, 0.07], [320, 200, 0.13]] },
-    { e: "🐔", n: "la gallina", t: "square",   s: [[950, 720, 0.1, 0.07], [950, 720, 0.1, 0.07], [820, 480, 0.2]] },
-    { e: "🐴", n: "el caballo", t: "sawtooth", s: [[760, 420, 0.45], [520, 300, 0.25]] },
-    { e: "🐸", n: "la rana",    t: "square",   s: [[190, 140, 0.14, 0.1], [190, 140, 0.14]] },
-    { e: "🦁", n: "el león",    t: "sawtooth", s: [[130, 70, 1.0]] },
-    { e: "🐑", n: "la oveja",   t: "square",   s: [[540, 430, 0.55]] }
+    { e: "🐮", n: "la vaca",    a: "vaca",    t: "sawtooth", s: [[170, 120, 0.9]] },
+    { e: "🐶", n: "el perro",   a: "perro",   t: "square",   s: [[430, 250, 0.12, 0.09], [410, 230, 0.14]] },
+    { e: "🐱", n: "el gato",    a: "gato",    t: "triangle", s: [[620, 950, 0.22, 0], [950, 520, 0.4]] },
+    { e: "🐷", n: "el chancho", a: "chancho", t: "square",   s: [[320, 200, 0.13, 0.07], [320, 200, 0.13]] },
+    { e: "🐔", n: "la gallina", a: "gallina", t: "square",   s: [[950, 720, 0.1, 0.07], [950, 720, 0.1, 0.07], [820, 480, 0.2]] },
+    { e: "🐴", n: "el caballo", a: "caballo", t: "sawtooth", s: [[760, 420, 0.45], [520, 300, 0.25]] },
+    { e: "🐸", n: "la rana",    a: "rana",    t: "square",   s: [[190, 140, 0.14, 0.1], [190, 140, 0.14]] },
+    { e: "🦁", n: "el león",    a: "leon",    t: "sawtooth", s: [[130, 70, 1.0]] },
+    { e: "🐑", n: "la oveja",   a: "oveja",   t: "square",   s: [[540, 430, 0.55]] }
   ];
+
+  precargar(bichos.map(b => b.a));
 
   capa.style.background = "linear-gradient(#a8e063, #56ab2f)";
   const tablero = document.createElement("div");
@@ -498,8 +523,8 @@ JUEGOS.granja = function () {
       btn.classList.remove("saltando");
       void btn.offsetWidth;
       btn.classList.add("saltando");
-      bicho(b.s, b.t);                          // el sonido sale al toque
-      setTimeout(() => decir(b.n), 550);        // y después la voz dice cuál es
+      grabacion(b.a) || bicho(b.s, b.t);        // el sonido sale al toque
+      setTimeout(() => decir(b.n), 900);        // y después la voz dice cuál es
 
       const r = btn.getBoundingClientRect();
       estallar(r.left + r.width / 2, r.top + r.height / 2, alAzar(COLORES), 14);
