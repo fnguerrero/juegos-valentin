@@ -170,7 +170,7 @@
   .carta.lista .cara { opacity:1; }
 
   /* ---------- ATRAPAR ---------- */
-  #cesta { position:absolute; z-index:30; font-size:16vmin; pointer-events:none;
+  #cesta { position:absolute; z-index:30; font-size:24vmin; pointer-events:none;
            bottom:2vmin; transform:translateX(-50%); transition:none; }
   #sonido {
     position:absolute; top:2vmin; right:2vmin; z-index:50;
@@ -231,6 +231,26 @@ function audio() {
   return ctxAudio;
 }
 
+/* Todo el sonido pasa por acá: un limitador que impide que se sature y suene
+   "a cable en corto" cuando se juntan la música, un efecto y la voz. */
+let maestro = null;
+function salida() {
+  const ac = audio();
+  if (!maestro) {
+    const comp = ac.createDynamicsCompressor();
+    comp.threshold.value = -14;
+    comp.knee.value = 12;
+    comp.ratio.value = 12;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.25;
+    const vol = ac.createGain();
+    vol.gain.value = 0.85;
+    comp.connect(vol).connect(ac.destination);
+    maestro = comp;
+  }
+  return maestro;
+}
+
 // Nota simple con envolvente suave (nada estridente para un nene chico)
 function nota(frec, dur = 0.35, tipo = "sine", vol = 0.25) {
   const ac = audio();
@@ -241,7 +261,7 @@ function nota(frec, dur = 0.35, tipo = "sine", vol = 0.25) {
   gan.gain.setValueAtTime(0, ac.currentTime);
   gan.gain.linearRampToValueAtTime(vol, ac.currentTime + 0.02);
   gan.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
-  osc.connect(gan).connect(ac.destination);
+  osc.connect(gan).connect(salida());
   osc.start();
   osc.stop(ac.currentTime + dur + 0.05);
 }
@@ -256,7 +276,7 @@ function pop() {
   osc.frequency.exponentialRampToValueAtTime(120, ac.currentTime + 0.12);
   gan.gain.setValueAtTime(0.3, ac.currentTime);
   gan.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
-  osc.connect(gan).connect(ac.destination);
+  osc.connect(gan).connect(salida());
   osc.start();
   osc.stop(ac.currentTime + 0.2);
 }
@@ -308,7 +328,7 @@ function bicho(pasos, tipo = "sawtooth", vol = 0.18) {
     gan.gain.linearRampToValueAtTime(vol, t + 0.04);
     gan.gain.setValueAtTime(vol, t + p[2] * 0.7);
     gan.gain.exponentialRampToValueAtTime(0.001, t + p[2]);
-    osc.connect(filtro).connect(gan).connect(ac.destination);
+    osc.connect(filtro).connect(gan).connect(salida());
     osc.start(t);
     osc.stop(t + p[2] + 0.05);
     t += p[2] + (p[3] || 0.05);
@@ -357,7 +377,7 @@ const musica = (function () {
       gan.gain.setValueAtTime(0, cuando);
       gan.gain.linearRampToValueAtTime(v, cuando + 0.015);
       gan.gain.exponentialRampToValueAtTime(0.0001, cuando + dur / mult);
-      osc.connect(gan).connect(ac.destination);
+      osc.connect(gan).connect(salida());
       osc.start(cuando);
       osc.stop(cuando + dur + 0.1);
     });
@@ -453,6 +473,7 @@ function medir() {
 window.addEventListener("resize", () => { medir(); if (juegoActual && juegoActual.medir) juegoActual.medir(); });
 
 let juegoActual = null;
+let juegoNombre = null;
 let cuadro = 0;
 
 function ciclo() {
@@ -469,9 +490,11 @@ function abrir(nombre) {
   cerrar();
   menu.style.display = "none";
   if (window.fondoMenuAndando) window.fondoMenuAndando.apagar();
+  history.pushState({ juego: nombre }, "");
   pantallaJuego.classList.add("activo");
   btnVolver.classList.add("visible");
   medir(); // recién ahora el canvas tiene tamaño real
+  juegoNombre = nombre;
   juegoActual = JUEGOS[nombre]();
   if (juegoActual.dibujar) ciclo();
   audio();
@@ -487,6 +510,7 @@ function cerrar(alMenu) {
   cancelAnimationFrame(cuadro);
   if (juegoActual && juegoActual.salir) juegoActual.salir();
   juegoActual = null;
+  juegoNombre = null;
   capa.innerHTML = "";
   pantallaJuego.style.background = "";
   marcador.style.display = "none";
@@ -498,7 +522,16 @@ function cerrar(alMenu) {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
-btnVolver.addEventListener("click", () => cerrar(true));
+btnVolver.addEventListener("click", () => history.back());
+
+/* La flecha "atrás" del celular tiene que hacer lo mismo que la del juego.
+   Se deja siempre una entrada de más en el historial: al volver atrás se
+   consume esa y se repone, así el botón nunca cierra la aplicación. */
+history.pushState({ colchon: true }, "");
+window.addEventListener("popstate", () => {
+  if (juegoActual) cerrar(true);
+  history.pushState({ colchon: true }, "");
+});
 btnSonido.addEventListener("click", () => {
   btnSonido.textContent = musica.alternar() ? "🔇" : "🔊";
 });
@@ -896,7 +929,7 @@ JUEGOS.atrapar = function () {
   return {
     dibujar() {
       cv.clearRect(0, 0, A, H);
-      const tam = Math.min(A, H) * 0.11; // se recalcula por si rotó la pantalla
+      const tam = Math.min(A, H) * 0.17; // se recalcula por si rotó la pantalla
 
       if (--proximo <= 0) {
         cosas.push({
@@ -910,7 +943,7 @@ JUEGOS.atrapar = function () {
         proximo = 170 + Math.random() * 110;  // y de a una por vez, sin amontonarse
       }
 
-      const pisoY = H - Math.min(A, H) * 0.16;
+      const pisoY = H - Math.min(A, H) * 0.20;
 
       cv.font = tam + "px serif";
       cv.textAlign = "center";
@@ -922,13 +955,13 @@ JUEGOS.atrapar = function () {
         c.ang += c.giro;
 
         // ¿la atrapó?
-        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.11) {
+        if (c.y > pisoY && Math.abs(c.x - cestaX) < Math.min(A, H) * 0.16) {
           estallar(c.x, c.y, alAzar(COLORES), 18);
           cosas.splice(i, 1);
           puntos++;
           marcador.textContent = puntos;
           nota(500 + Math.min(puntos, 12) * 40, 0.25, "triangle", 0.2);
-          if (puntos % 10 === 0) { fanfarria(); decir("¡Muy bien!"); }
+          if (puntos % 10 === 0) { fanfarria(); decir("¡Muy bien Valen!"); }
           continue;
         }
         // se cayó: rebota y desaparece, sin penalización
@@ -1022,11 +1055,33 @@ JUEGOS.atrapar = function () {
 
 medir();
 
+/* Si el celular se bloquea, se cambia de app o de usuario, la música tiene que
+   callarse: si no, se sigue escuchando con la app tapada. Al volver, retoma. */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    musica.parar();
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    if (ctxAudio && ctxAudio.state === "running") ctxAudio.suspend();
+  } else {
+    if (ctxAudio && ctxAudio.state === "suspended") ctxAudio.resume();
+    musica.arrancar(juegoNombre || "menu");
+  }
+});
+window.addEventListener("pagehide", () => {
+  musica.parar();
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (ctxAudio && ctxAudio.state === "running") ctxAudio.suspend();
+});
+
 // El navegador no deja sonar nada hasta que el dedo toca la pantalla:
 // el primer toque en el menú (fuera de una tarjeta) enciende la música.
 document.addEventListener("pointerdown", function arranque(ev) {
   if (ev.target.closest(".tarjeta")) return;
   document.removeEventListener("pointerdown", arranque);
+  // pantalla completa: menos superficie para que el nene se salga sin querer
+  if (matchMedia("(pointer: coarse)").matches && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
   if (menu.style.display !== "none") {
     musica.arrancar("menu");
     btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
