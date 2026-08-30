@@ -1292,7 +1292,12 @@ document.addEventListener("pointerdown", function arranque(ev) {
 
 // Con esto el celular la ofrece como app y sigue andando sin internet
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").then(reg => {
+      reg.update();                       // busca versión nueva al abrir
+      setInterval(() => reg.update(), 60 * 60 * 1000);
+    }).catch(() => {});
+  });
 }
 
 // Link directo a un juego: .../#granja abre la granja sin pasar por el menú
