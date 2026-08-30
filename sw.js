@@ -1,7 +1,7 @@
 /* Service worker: deja la app usable sin internet una vez abierta.
    - El HTML va por red primero, así una versión nueva llega apenas se publica.
    - Los sonidos e íconos van por caché primero: no cambian y así cargan al toque. */
-const CACHE = "valen-v8";  // subir esto cada vez que cambie un sonido o un icono
+const CACHE = "valen-v9";  // subir esto cada vez que cambie un sonido o un icono
 const ESTATICOS = [
   "./", "./index.html", "./manifest.json",
   "./fuentes/baloo2-700.woff2", "./fuentes/baloo2-800.woff2",
