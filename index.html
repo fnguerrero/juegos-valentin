@@ -701,14 +701,15 @@ const JUEGOS = {};
 JUEGOS.globos = function () {
   const globos = [];
   let proximo = 0;
+  let explotados = 0;
 
   function nuevoGlobo() {
-    const r = Math.max(A, H) * 0.075;
+    const r = Math.max(A, H) * 0.095;      // más grandes
     globos.push({
       x: r + Math.random() * (A - r * 2),
       y: H + r,
       r,
-      vel: 0.9 + Math.random() * 1.1,
+      vel: 0.5 + Math.random() * 0.4,       // y más lentos
       bamboleo: Math.random() * Math.PI * 2,
       color: alAzar(COLORES)
     });
@@ -723,6 +724,9 @@ JUEGOS.globos = function () {
         estallar(g.x, g.y, g.color, 26);
         globos.splice(i, 1);
         pop();
+        if (++explotados % 3 === 0) {       // cada tres, lo felicita
+          setTimeout(() => { fanfarria(); felicitar(); }, 250);
+        }
         return;
       }
     }
@@ -741,7 +745,7 @@ JUEGOS.globos = function () {
       cv.fillStyle = "#ffe066";
       cv.beginPath(); cv.arc(A * 0.88, H * 0.12, Math.min(A, H) * 0.09, 0, Math.PI * 2); cv.fill();
 
-      if (--proximo <= 0) { nuevoGlobo(); proximo = 45 + Math.random() * 45; }
+      if (--proximo <= 0 && globos.length < 3) { nuevoGlobo(); proximo = 120 + Math.random() * 90; }
 
       for (let i = globos.length - 1; i >= 0; i--) {
         const g = globos[i];
