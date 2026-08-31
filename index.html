@@ -298,7 +298,7 @@
       <button class="tarjeta" data-juego="pintar"><span class="dibujo">🎨</span><span class="nombre">Pintar</span></button>
       <button class="tarjeta" data-juego="memo"><span class="dibujo">🃏</span><span class="nombre">Memoria</span></button>
       <button class="tarjeta" data-juego="atrapar"><span class="dibujo">🧺</span><span class="nombre">Atrapar</span></button>
-      <button class="tarjeta" data-juego="familia"><span class="dibujo doble">👨🏽<span>👩🏽</span><span>👦🏽</span></span><span class="nombre">Familia</span></button>
+      <button class="tarjeta" data-juego="familia"><span class="dibujo doble">👨<span>👩</span><span>👦</span></span><span class="nombre">Familia</span></button>
       <button class="tarjeta" data-juego="numeros"><span class="dibujo">🔢</span><span class="nombre">Números</span></button>
     </div>
   </div>
@@ -703,13 +703,20 @@ JUEGOS.globos = function () {
   let proximo = 0;
   let explotados = 0;
 
+  let ultimoX = -1;
   function nuevoGlobo() {
     const r = Math.max(A, H) * 0.095;      // más grandes
+    let x = 0;
+    for (let intento = 0; intento < 12; intento++) {    // que no salga pegado al anterior
+      x = r + Math.random() * (A - r * 2);
+      if (ultimoX < 0 || Math.abs(x - ultimoX) > A * 0.32) break;
+    }
+    ultimoX = x;
     globos.push({
-      x: r + Math.random() * (A - r * 2),
+      x,
       y: H + r,
       r,
-      vel: 0.5 + Math.random() * 0.4,       // y más lentos
+      vel: 0.95 + Math.random() * 0.5,      // ni volando ni arrastrándose
       bamboleo: Math.random() * Math.PI * 2,
       color: alAzar(COLORES)
     });
@@ -724,7 +731,7 @@ JUEGOS.globos = function () {
         estallar(g.x, g.y, g.color, 26);
         globos.splice(i, 1);
         pop();
-        if (++explotados % 3 === 0) {       // cada tres, lo felicita
+        if (++explotados % 6 === 0) {       // cada seis, lo felicita
           setTimeout(() => { fanfarria(); felicitar(); }, 250);
         }
         return;
@@ -745,7 +752,7 @@ JUEGOS.globos = function () {
       cv.fillStyle = "#ffe066";
       cv.beginPath(); cv.arc(A * 0.88, H * 0.12, Math.min(A, H) * 0.09, 0, Math.PI * 2); cv.fill();
 
-      if (--proximo <= 0 && globos.length < 3) { nuevoGlobo(); proximo = 120 + Math.random() * 90; }
+      if (--proximo <= 0 && globos.length < 2) { nuevoGlobo(); proximo = 190 + Math.random() * 130; }
 
       for (let i = globos.length - 1; i >= 0; i--) {
         const g = globos[i];
