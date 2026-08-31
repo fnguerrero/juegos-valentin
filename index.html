@@ -72,7 +72,7 @@
   .tarjeta .dibujo { font-size:min(11vw, 11vh); line-height:1;
                      filter:drop-shadow(0 .5vmin .8vmin rgba(0,0,0,.28)); }
   /* dos caritas para la familia: el emoji de familia sale como silueta gris */
-  .tarjeta .dibujo.doble { font-size:min(9vw, 8.5vh); white-space:nowrap; }
+  .tarjeta .dibujo.doble { font-size:min(7.5vw, 7vh); white-space:nowrap; }
   .tarjeta .dibujo.doble > span { margin-left:-.28em; }
   .tarjeta .nombre { font-size:min(3.2vw, 3vh); font-weight:900; color:#fff;
                      letter-spacing:.03em; text-shadow:0 .3vmin .5vmin rgba(0,0,0,.35); }
@@ -81,7 +81,7 @@
   @media (orientation: portrait) {
     #grid { grid-template-columns:repeat(2, min(40vw, 19vh)); gap:2.4vmin; }
     .tarjeta .dibujo { font-size:min(14vw, 8.5vh); }
-    .tarjeta .dibujo.doble { font-size:min(11vw, 6.5vh); }
+    .tarjeta .dibujo.doble { font-size:min(9vw, 5.5vh); }
     .tarjeta .nombre { font-size:min(3.8vw, 2.4vh); }
   }
   .tarjeta:active { transform:scale(.92) translateY(.6vmin); }
@@ -298,7 +298,7 @@
       <button class="tarjeta" data-juego="pintar"><span class="dibujo">🎨</span><span class="nombre">Pintar</span></button>
       <button class="tarjeta" data-juego="memo"><span class="dibujo">🃏</span><span class="nombre">Memoria</span></button>
       <button class="tarjeta" data-juego="atrapar"><span class="dibujo">🧺</span><span class="nombre">Atrapar</span></button>
-      <button class="tarjeta" data-juego="familia"><span class="dibujo doble">👩<span>👨</span></span><span class="nombre">Familia</span></button>
+      <button class="tarjeta" data-juego="familia"><span class="dibujo doble">👨🏽<span>👩🏽</span><span>👦🏽</span></span><span class="nombre">Familia</span></button>
       <button class="tarjeta" data-juego="numeros"><span class="dibujo">🔢</span><span class="nombre">Números</span></button>
     </div>
   </div>
