@@ -71,6 +71,8 @@
   }
   .tarjeta .dibujo { font-size:min(11vw, 11vh); line-height:1;
                      filter:drop-shadow(0 .5vmin .8vmin rgba(0,0,0,.28)); }
+  .tarjeta .icono-globos { width:min(13vw, 12vh); height:auto;
+                           filter:drop-shadow(0 .5vmin .8vmin rgba(0,0,0,.28)); }
   .tarjeta .nombre { font-size:min(3.2vw, 3vh); font-weight:900; color:#fff;
                      letter-spacing:.03em; text-shadow:0 .3vmin .5vmin rgba(0,0,0,.35); }
 
@@ -78,6 +80,7 @@
   @media (orientation: portrait) {
     #grid { grid-template-columns:repeat(2, min(40vw, 19vh)); gap:2.4vmin; }
     .tarjeta .dibujo { font-size:min(14vw, 8.5vh); }
+    .tarjeta .icono-globos { width:min(17vw, 10vh); }
     .tarjeta .nombre { font-size:min(3.8vw, 2.4vh); }
   }
   .tarjeta:active { transform:scale(.92) translateY(.6vmin); }
@@ -288,7 +291,7 @@
     <canvas id="fondoMenu"></canvas>
     <div id="titulo"></div>
     <div id="grid">
-      <button class="tarjeta" data-juego="globos"><span class="dibujo">🎈</span><span class="nombre">Globos</span></button>
+      <button class="tarjeta" data-juego="globos"><svg class="dibujo icono-globos" viewBox="0 0 110 125" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gAzul" cx="34%" cy="26%" r="78%"><stop offset="0%" stop-color="#8fd3ff"/><stop offset="60%" stop-color="#37a3ee"/><stop offset="100%" stop-color="#1774c4"/></radialGradient><radialGradient id="gAmar" cx="34%" cy="26%" r="78%"><stop offset="0%" stop-color="#ffe98a"/><stop offset="60%" stop-color="#ffc933"/><stop offset="100%" stop-color="#e79c07"/></radialGradient></defs><path d="M36 78 q6 16 -2 30" stroke="#cfe6ff" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M74 92 q-7 15 1 28" stroke="#ffe6ab" stroke-width="3.4" fill="none" stroke-linecap="round"/><g transform="translate(74,55)"><ellipse cx="0" cy="0" rx="26" ry="31" fill="url(#gAmar)"/><path d="M-5 30 h10 l-5 8 z" fill="#e79c07"/><ellipse cx="-9" cy="-11" rx="6" ry="9" fill="#fff" opacity=".55" transform="rotate(-20 -9 -11)"/></g><g transform="translate(36,42)"><ellipse cx="0" cy="0" rx="28" ry="33" fill="url(#gAzul)"/><path d="M-5 32 h10 l-5 8 z" fill="#1774c4"/><ellipse cx="-10" cy="-12" rx="6.5" ry="10" fill="#fff" opacity=".55" transform="rotate(-20 -10 -12)"/></g></svg><span class="nombre">Globos</span></button>
       <button class="tarjeta" data-juego="granja"><span class="dibujo">🐮</span><span class="nombre">Animales</span></button>
       <button class="tarjeta" data-juego="piano"><span class="dibujo">🎹</span><span class="nombre">Piano</span></button>
       <button class="tarjeta" data-juego="pintar"><span class="dibujo">🎨</span><span class="nombre">Pintar</span></button>
