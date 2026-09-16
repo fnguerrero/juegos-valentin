@@ -1,9 +1,9 @@
 /* Service worker: deja la app usable sin internet una vez abierta.
    - El HTML va por red primero, así una versión nueva llega apenas se publica.
    - Los sonidos e íconos van por caché primero: no cambian y así cargan al toque. */
-const CACHE = "valen-v10";  // subir esto cada vez que cambie un sonido o un icono
+const CACHE = "valen-v11";  // subir esto cada vez que cambie un sonido o un icono
 const ESTATICOS = [
-  "./", "./index.html", "./manifest.json",
+  "./", "./manifest.json",
   "./fuentes/baloo2-700.woff2", "./fuentes/baloo2-800.woff2",
   "./icono-192.png", "./icono-512.png", "./apple-touch-icon.png",
   "./sonidos/vaca.mp3", "./sonidos/perro.mp3", "./sonidos/gato.mp3",
@@ -14,7 +14,9 @@ const ESTATICOS = [
 self.addEventListener("install", ev => {
   ev.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ESTATICOS))
+      .then(c => Promise.all(ESTATICOS.map(u =>
+        fetch(u, { cache: "reload" }).then(limpia).then(r => r.ok && c.put(u, r))
+      )))
       .then(() => self.skipWaiting())
   );
 });
@@ -27,6 +29,16 @@ self.addEventListener("activate", ev => {
   );
 });
 
+// Algunos hostings (Cloudflare) redirigen /index.html a /. Chrome rechaza una
+// respuesta redirigida para abrir una página (ERR_FAILED), así que se copia
+// en una respuesta nueva, sin la marca de redirección.
+function limpia(res) {
+  if (!res.redirected) return res;
+  return res.blob().then(cuerpo => new Response(cuerpo, {
+    status: res.status, statusText: res.statusText, headers: res.headers
+  }));
+}
+
 self.addEventListener("fetch", ev => {
   const req = ev.request;
   if (req.method !== "GET") return;
@@ -37,13 +49,13 @@ self.addEventListener("fetch", ev => {
     // red primero y SIN la caché del navegador: si no, sigue sirviendo la
     // versión vieja del HTML aunque ya haya una publicada.
     ev.respondWith(
-      fetch(new Request(req.url, { cache: "reload", credentials: "same-origin" }))
+      fetch(req.url, { cache: "reload", credentials: "same-origin" })
+        .then(limpia)
         .then(res => {
-          const copia = res.clone();
-          caches.open(CACHE).then(c => c.put("./index.html", copia));
+          caches.open(CACHE).then(c => c.put("./", res.clone()));
           return res;
         })
-        .catch(() => caches.match("./index.html").then(r => r || caches.match("./")))
+        .catch(() => caches.match("./"))
     );
     return;
   }
