@@ -1339,7 +1339,7 @@ window.addEventListener("pagehide", () => {
 
 // El navegador no deja sonar nada hasta que el dedo toca la pantalla:
 // el primer toque en el menú (fuera de una tarjeta) enciende la música.
-document.addEventListener("pointerdown", function arranque(ev) {
+function arranque(ev) {
   if (ev.target.closest(".tarjeta")) return;
   document.removeEventListener("pointerdown", arranque);
   if (menu.style.display !== "none") {
@@ -1347,6 +1347,35 @@ document.addEventListener("pointerdown", function arranque(ev) {
     btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
     btnSonido.classList.add("visible");
   }
+}
+document.addEventListener("pointerdown", arranque);
+
+// Que la pantalla no se apague mientras juega. El sistema suelta el candado
+// cuando la app pasa a segundo plano, así que se vuelve a pedir al volver.
+let candado = null;
+async function pantallaEncendida() {
+  if (candado || !("wakeLock" in navigator) || document.hidden) return;
+  try {
+    candado = await navigator.wakeLock.request("screen");
+    candado.addEventListener("release", () => { candado = null; });
+  } catch (e) {}
+}
+window.addEventListener("load", pantallaEncendida);
+document.addEventListener("pointerdown", pantallaEncendida);
+document.addEventListener("visibilitychange", pantallaEncendida);
+
+// Donde el navegador lo permite (la app instalada en el celular), la música
+// arranca sola al abrir. Si no lo permite, sigue esperando el primer toque.
+window.addEventListener("load", () => {
+  let ac;
+  try { ac = audio(); } catch (e) { return; }
+  setTimeout(() => {
+    if (ac.state !== "running" || juegoActual) return;
+    document.removeEventListener("pointerdown", arranque);
+    musica.arrancar("menu");
+    btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
+    btnSonido.classList.add("visible");
+  }, 400);
 });
 
 // Con esto el celular la ofrece como app y sigue andando sin internet
