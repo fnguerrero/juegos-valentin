@@ -1370,6 +1370,14 @@ window.addEventListener("pagehide", () => {
 
 // El navegador no deja sonar nada hasta que el dedo toca la pantalla:
 // el primer toque en el menú (fuera de una tarjeta) enciende la música.
+// Pantalla completa al primer toque: esconde los botones de abajo del celular.
+function pantallaCompleta() {
+  if (!matchMedia("(pointer: coarse)").matches || document.fullscreenElement) return;
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+}
+document.addEventListener("pointerdown", pantallaCompleta);
+
 function arranque(ev) {
   if (ev.target.closest(".tarjeta")) return;
   document.removeEventListener("pointerdown", arranque);
