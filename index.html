@@ -94,6 +94,31 @@
   .tarjeta:nth-child(8){ background:linear-gradient(160deg,#8fe3d8,#17a89a); animation-delay:1.75s;animation-duration:3.5s }
   @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1.2vmin) } }
 
+  /* ---------- CUMPLEAÑOS (solo el 16/09) ---------- */
+  #cumple {
+    position:absolute; inset:0; z-index:90; display:none; overflow:hidden;
+    flex-direction:column; align-items:center; justify-content:center; gap:4vmin;
+    background:radial-gradient(circle at 50% 30%, #ff9ec7 0%, #c77dff 55%, #5a3fc0 100%);
+    text-align:center; padding:6vmin;
+  }
+  #cumple.visible { display:flex; }
+  #cumple .torta { font-size:min(38vw, 26vh); line-height:1; animation:latir 1.4s ease-in-out infinite;
+                   filter:drop-shadow(0 2vmin 2vmin rgba(0,0,0,.25)); position:relative; z-index:2; }
+  #cumple .saludo { font-size:min(12vw, 8vh); font-weight:800; line-height:1.05; position:relative; z-index:2;
+                    text-shadow:0 .5vmin 0 rgba(0,0,0,.3), 0 1vmin 2vmin rgba(0,0,0,.25); }
+  #cumple .saludo span { display:inline-block; animation:saludar 2s ease-in-out infinite; }
+  #cumple .jugar { font-family:inherit; font-size:min(8vw, 5.5vh); font-weight:800; color:#5a3fc0;
+                   background:#fff; border:none; border-radius:99vmin; padding:2vmin 9vmin;
+                   box-shadow:0 1.2vmin 0 rgba(0,0,0,.25); cursor:pointer; position:relative; z-index:2; }
+  #cumple .jugar:active { transform:scale(.93); }
+  #cumple .papelito { position:absolute; top:-6vmin; width:2.4vmin; height:3.6vmin; border-radius:.6vmin;
+                      animation:caer linear infinite; z-index:1; }
+  #cumple .globito { position:absolute; bottom:-25vmin; font-size:min(16vw, 11vh);
+                     animation:subir linear infinite; z-index:1; }
+  @keyframes latir { 0%,100% { transform:scale(1) rotate(-3deg) } 50% { transform:scale(1.1) rotate(3deg) } }
+  @keyframes caer { to { transform:translateY(115vh) rotate(720deg) } }
+  @keyframes subir { to { transform:translateY(-140vh) } }
+
   /* ---------- PANTALLA DE JUEGO ---------- */
   #juego { position:absolute; inset:0; display:none; }
   #juego.activo { display:block; }
@@ -306,6 +331,12 @@
     <canvas id="lienzo"></canvas>
     <div id="capa"></div>
     <div id="marcador">0</div>
+  </div>
+
+  <div id="cumple">
+    <div class="torta">🎂</div>
+    <div class="saludo" id="saludoCumple"></div>
+    <button class="jugar" id="jugarCumple">¡A jugar!</button>
   </div>
 
   <button id="volver">⬅️</button>
@@ -1342,6 +1373,7 @@ window.addEventListener("pagehide", () => {
 function arranque(ev) {
   if (ev.target.closest(".tarjeta")) return;
   document.removeEventListener("pointerdown", arranque);
+  if (pantallaCumple.classList.contains("visible")) return;   // ahí suena el cumpleaños
   if (menu.style.display !== "none") {
     musica.arrancar("menu");
     btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
@@ -1349,6 +1381,83 @@ function arranque(ev) {
   }
 }
 document.addEventListener("pointerdown", arranque);
+
+/* ---------- CUMPLEAÑOS ----------
+   El 16 de septiembre la app abre con una pantalla de feliz cumple.
+   Para verla cualquier otro día: .../index.html#cumple */
+const pantallaCumple = document.getElementById("cumple");
+const esCumple = (() => {
+  const hoy = new Date();
+  return (hoy.getMonth() === 8 && hoy.getDate() === 16) || location.hash === "#cumple";
+})();
+let cumpleCantado = false;
+
+function cantarCumple() {
+  if (cumpleCantado) return;
+  cumpleCantado = true;
+  // "Cumpleaños feliz" (melodía de dominio público): [nota, tiempos]
+  const N = { G4:392, A4:440, B4:493.88, C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99 };
+  const tema = [
+    ["G4",.75],["G4",.25],["A4",1],["G4",1],["C5",1],["B4",2],
+    ["G4",.75],["G4",.25],["A4",1],["G4",1],["D5",1],["C5",2],
+    ["G4",.75],["G4",.25],["G5",1],["E5",1],["C5",1],["B4",1],["A4",2],
+    ["F5",.75],["F5",.25],["E5",1],["C5",1],["D5",1],["C5",2.5]
+  ];
+  const tiempo = 0.42;
+  let t = 0;
+  tema.forEach(([n, d]) => {
+    setTimeout(() => nota(N[n], d * tiempo * 1.1, "triangle", 0.22), t * 1000);
+    t += d * tiempo;
+  });
+  setTimeout(() => { fanfarria(); decir("¡Feliz cumpleaños Valentín!"); }, t * 1000 + 300);
+}
+
+if (esCumple) {
+  const saludo = document.getElementById("saludoCumple");
+  let i = 0;
+  "¡Feliz cumple Valen!".split(" ").forEach((palabra, n) => {
+    const caja = document.createElement("span");       // una palabra no se parte al medio
+    caja.style.whiteSpace = "nowrap";
+    caja.style.animation = "none";
+    [...palabra].forEach(letra => {
+      const sp = document.createElement("span");
+      sp.textContent = letra;
+      sp.style.color = ["#fff", "#ffe066", "#b8f2ff"][i % 3];
+      sp.style.animationDelay = (i++ * 0.08) + "s";
+      caja.appendChild(sp);
+    });
+    if (n) saludo.appendChild(document.createTextNode(" "));
+    saludo.appendChild(caja);
+  });
+  // papelitos que caen y globos que suben
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement("div");
+    p.className = "papelito";
+    p.style.left = Math.random() * 100 + "%";
+    p.style.background = COLORES[i % COLORES.length];
+    p.style.animationDuration = (3 + Math.random() * 3) + "s";
+    p.style.animationDelay = (-Math.random() * 6) + "s";
+    pantallaCumple.appendChild(p);
+  }
+  ["🎈", "🎈", "🎁", "🎈", "🎉", "🎈"].forEach((e, i) => {
+    const g = document.createElement("div");
+    g.className = "globito";
+    g.textContent = e;
+    g.style.left = (5 + i * 16) + "%";
+    g.style.animationDuration = (7 + Math.random() * 4) + "s";
+    g.style.animationDelay = (-Math.random() * 8) + "s";
+    pantallaCumple.appendChild(g);
+  });
+  pantallaCumple.classList.add("visible");
+  pantallaCumple.addEventListener("pointerdown", cantarCumple);
+  document.getElementById("jugarCumple").addEventListener("click", ev => {
+    ev.stopPropagation();
+    pantallaCumple.classList.remove("visible");
+    musica.arrancar("menu");
+    btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
+    btnSonido.classList.add("visible");
+  });
+}
 
 // Que la pantalla no se apague mientras juega. El sistema suelta el candado
 // cuando la app pasa a segundo plano, así que se vuelve a pedir al volver.
@@ -1372,6 +1481,7 @@ window.addEventListener("load", () => {
   setTimeout(() => {
     if (ac.state !== "running" || juegoActual) return;
     document.removeEventListener("pointerdown", arranque);
+    if (pantallaCumple.classList.contains("visible")) { cantarCumple(); return; }
     musica.arrancar("menu");
     btnSonido.textContent = musica.apagada ? "🔇" : "🔊";
     btnSonido.classList.add("visible");
