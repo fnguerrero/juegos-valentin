@@ -94,7 +94,7 @@
   .tarjeta:nth-child(8){ background:linear-gradient(160deg,#8fe3d8,#17a89a); animation-delay:1.75s;animation-duration:3.5s }
   @keyframes flotar { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-1.2vmin) } }
 
-  /* ---------- CUMPLEAÑOS (solo el 16/09) ---------- */
+  /* ---------- CUMPLEAÑOS (solo el día guardado en el dispositivo) ---------- */
   #cumple {
     position:absolute; inset:0; z-index:90; display:none; overflow:hidden;
     flex-direction:column; align-items:center; justify-content:center; gap:4vmin;
@@ -1391,12 +1391,22 @@ function arranque(ev) {
 document.addEventListener("pointerdown", arranque);
 
 /* ---------- CUMPLEAÑOS ----------
-   El 16 de septiembre la app abre con una pantalla de feliz cumple.
-   Para verla cualquier otro día: .../index.html#cumple */
+   El día del cumple la app abre con una pantalla de feliz cumple.
+   La fecha no está en el código, que es público: se guarda en el
+   dispositivo abriendo una vez .../index.html#cumple-el=DD-MM
+   (por ejemplo #cumple-el=05-03). Para verla cualquier otro día:
+   .../index.html#cumple */
 const pantallaCumple = document.getElementById("cumple");
 const esCumple = (() => {
+  const nueva = /^#cumple-el=(\d{1,2})-(\d{1,2})$/.exec(location.hash);
+  if (nueva) {
+    try { localStorage.setItem("valen-cumple", Number(nueva[1]) + "-" + Number(nueva[2])); } catch (e) {}
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  let guardada = null;
+  try { guardada = localStorage.getItem("valen-cumple"); } catch (e) {}
   const hoy = new Date();
-  return (hoy.getMonth() === 8 && hoy.getDate() === 16) || location.hash === "#cumple";
+  return guardada === hoy.getDate() + "-" + (hoy.getMonth() + 1) || location.hash === "#cumple";
 })();
 let cumpleCantado = false;
 
